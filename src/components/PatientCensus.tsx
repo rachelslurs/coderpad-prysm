@@ -189,11 +189,17 @@ export default function PatientCensus() {
 }
 
 // With more time:
-// - Default-sort by status instead of room — Critical/Needs Attention/Stable alphabetizes
-//   in triage order, which is what a charge nurse opens this page for. Holding off because
-//   the change is opinionated and the fixture's room-asc happens to be the natural eye-path.
-// - Numeric/locale-aware comparators per column (age sorts as string today — fine at 2 digits,
-//   breaks at 100+). Plumbing a comparator map per column key is the right shape.
+// - Status needs a semantic comparator, not a lexical one. Today's
+//   String(...).localeCompare(...) lands Critical / Needs Attention / Stable in triage
+//   rank by alphabet coincidence — add "Discharged" and it sorts between Critical and
+//   Needs Attention, which is clinically wrong. Right shape is a
+//   STATUS_RANK: Record<Patient["status"], number> driving a numeric compare, and
+//   defaulting the page to status-desc so the charge nurse lands on Critical first.
+//   (Holding the default-sort change off today because it's opinionated and the
+//   fixture's room-asc happens to be the natural eye-path.)
+// - Per-column comparator map more broadly: age sorts as string today (fine at 2 digits,
+//   breaks at 100+); room is alphanumeric and would want natural-order; admittedOn would
+//   want Date compare. One comparators[key] lookup replaces the localeCompare default.
 // - Dedicated search input with clear button.
 // - Sticky thead once the row count justifies it.
 // - Dark-mode variants to match App's dark:bg-zinc-950.
