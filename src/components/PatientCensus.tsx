@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { PATIENTS, type Patient } from "../../data/patients.ts";
 import StatusBadge from "./StatusBadge";
+import PatientDetail from "./PatientDetail";
 
 // Triage accent applied to the first <td>. Color alone is a WCAG fail —
 // pairs with the status column (becomes a badge in Step 3) for redundant encoding.
@@ -9,40 +10,6 @@ const ROW_ACCENT: Record<Patient["status"], string> = {
   Critical: "border-l-4 border-l-red-500",
   "Needs Attention": "border-l-4 border-l-amber-500",
   Stable: "border-l-4 border-l-transparent",
-};
-
-// Manual split — new Date("YYYY-MM-DD") parses as UTC midnight and drifts a day
-// west of GMT. Locale formatter on a local-constructed date is correct.
-const parseAdmitted = (iso: string) => {
-  const [year, month, day] = iso.split("-").map(Number);
-  return new Date(year, month - 1, day);
-};
-
-const formatAdmitted = (iso: string) =>
-  parseAdmitted(iso).toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-
-// "Day N" derived from today — clinically the scan cue ("Day 4" vs "Day 60").
-// Fixture admittedOn dates are 2024 so numbers read large here; the pattern is
-// the cue, not the magnitude. Would seed fixture from now-N days in prod.
-const daysSinceAdmitted = (iso: string) => {
-  const admitted = parseAdmitted(iso);
-  admitted.setHours(0, 0, 0, 0);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return Math.max(0, Math.floor((today.getTime() - admitted.getTime()) / 86_400_000));
-};
-
-// Hero tint mirrors StatusBadge / ROW_ACCENT — same palette the row already
-// uses, so urgency carries through into the detail view. Redundant encoding
-// (status word + badge color + tinted hero) wins more on scan than minimalism.
-const DIAGNOSIS_TINT: Record<Patient["status"], string> = {
-  Critical: "bg-red-50 ring-red-600/20",
-  "Needs Attention": "bg-amber-50 ring-amber-600/20",
-  Stable: "bg-zinc-50 ring-zinc-200",
 };
 
 export default function PatientCensus() {
@@ -55,9 +22,8 @@ export default function PatientCensus() {
   });
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
 
-  // WCAG dialog pattern — focus the close button on open, restore focus to the
-  // originating row on close so keyboard users don't lose their place.
-  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  // Restore focus to the originating row on close so keyboard users don't lose
+  // their place. The close-button-on-open side lives in PatientDetail.
   const lastFocusedRowRef = useRef<HTMLTableRowElement | null>(null);
 
   // STEP 2 — shallow bug was the empty deps array, but adding [searchQuery]
@@ -72,22 +38,10 @@ export default function PatientCensus() {
       return sort.dir === "asc" ? cmp : -cmp;
     });
 
-  // Escape closes — only attach the listener while open so we don't intercept globally.
+  // Row-focus restoration runs after the detail panel unmounts. Driven by an
+  // effect (not the click handler) so it fires after the DOM swap.
   useEffect(() => {
-    if (!selectedPatient) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setSelectedPatient(null);
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [selectedPatient]);
-
-  // Focus orchestration: on open → close button; on close → originating row.
-  // Driven by an effect (not the click handler) so it fires after the DOM swap.
-  useEffect(() => {
-    if (selectedPatient) {
-      closeButtonRef.current?.focus();
-    } else if (lastFocusedRowRef.current) {
+    if (!selectedPatient && lastFocusedRowRef.current) {
       lastFocusedRowRef.current.focus();
       lastFocusedRowRef.current = null;
     }
@@ -128,86 +82,10 @@ export default function PatientCensus() {
   // would explore split-pane that physically separates the two regions.
   if (selectedPatient) {
     return (
-      <section className="w-full max-w-5xl overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
-        <aside
-          data-testid="detail-panel"
-          role="region"
-          aria-labelledby="detail-panel-name"
-        >
-          <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-3">
-            <button
-              type="button"
-              ref={closeButtonRef}
-              data-testid="close-button"
-              onClick={() => setSelectedPatient(null)}
-              aria-label="Close patient details and return to roster"
-              className="-mx-2 inline-flex items-center gap-1.5 rounded px-2 py-1 text-sm font-medium text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-            >
-              <span aria-hidden="true">←</span>
-              <span>Back to roster</span>
-            </button>
-            <StatusBadge status={selectedPatient.status} />
-          </div>
-
-          <div className="p-6">
-            <h2
-              id="detail-panel-name"
-              className="text-2xl font-semibold tracking-tight text-zinc-900"
-            >
-              {selectedPatient.name}
-            </h2>
-            <p className="mt-1 text-sm text-zinc-500">
-              Room{" "}
-              <span className="font-mono text-zinc-700">{selectedPatient.room}</span>
-              {" · "}
-              Age <span className="tabular-nums">{selectedPatient.age}</span>
-            </p>
-
-            {/* Tier 1 — Diagnosis hero. The clinical "why are we here." Tinted by
-                status so urgency reads at a glance before the eye lands on the badge. */}
-            <div
-              className={`mt-6 rounded-md p-4 ring-1 ring-inset ${DIAGNOSIS_TINT[selectedPatient.status]}`}
-            >
-              <p className="text-[11px] font-medium uppercase tracking-wider text-zinc-500">
-                Diagnosis
-              </p>
-              <p className="mt-1 text-lg font-medium text-zinc-900">
-                {selectedPatient.diagnosis}
-              </p>
-            </div>
-
-            {/* Tier 2 — care ownership + length of stay. "Day N" leads because
-                it's the scan cue; the calendar date trails as the audit trail. */}
-            <dl className="mt-5 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-              <div>
-                <dt className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                  Physician
-                </dt>
-                <dd className="mt-1 text-sm text-zinc-900">{selectedPatient.physician}</dd>
-              </div>
-              <div>
-                <dt className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                  Admitted
-                </dt>
-                <dd className="mt-1 flex items-baseline gap-2 text-sm text-zinc-900">
-                  <span className="text-base font-semibold tabular-nums">
-                    Day {daysSinceAdmitted(selectedPatient.admittedOn)}
-                  </span>
-                  <span className="text-xs text-zinc-500">
-                    since {formatAdmitted(selectedPatient.admittedOn)}
-                  </span>
-                </dd>
-              </div>
-            </dl>
-
-            {/* Tier 3 — billing context, demoted. Same data, lower visual weight. */}
-            <p className="mt-6 border-t border-zinc-100 pt-4 text-xs text-zinc-500">
-              Insurance ·{" "}
-              <span className="text-zinc-700">{selectedPatient.insurance}</span>
-            </p>
-          </div>
-        </aside>
-      </section>
+      <PatientDetail
+        patient={selectedPatient}
+        onClose={() => setSelectedPatient(null)}
+      />
     );
   }
 
