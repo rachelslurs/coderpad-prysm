@@ -42,34 +42,24 @@ src/
 - Sort state is `{ key, dir }` as one cohesive value so toggle transitions stay atomic.
 - Row accent (left border) on the first `<td>` pairs with `StatusBadge` for redundant encoding — color alone would be a WCAG fail.
 - Detail panel follows the WCAG dialog pattern: focus the close button on open, restore focus to the originating row on close.
+- Rows are focusable `<tr>` + `onKeyDown`, not `role="button"` — applying button semantics to a `<tr>` overrides the table role and collapses the cell-by-cell screen-reader read into one button label. The ARIA grid pattern is the fuller answer; see "With more time."
 
 ## With more time
 
-_This section (and the README itself) was written after the timer was up — consolidating the inline "would do differently" notes left in the code during the exercise. Some code edits were also made after the timer, not during the exercise:_
-- _The "hide patient name" toggle in the roster header._
-- _Keyboard activation on rows (see **Keyboard / focus** below) — Enter / Space to open the detail panel. Two deliberate deviations from the literal spec:_
-  - _No `role="button"` on the `<tr>`. Applying it would override the row's table semantics — screen readers stop announcing the cells (Room → Name → Age → Physician → Diagnosis → Status) and collapse the row to one button label. The clean pattern for "interactive row in a table" is focusable `<tr>` + `onKeyDown`, with the ARIA grid pattern as the fuller answer (still listed under **Keyboard / focus** as a remaining gap)._
-  - _`openPanel` widened to `SyntheticEvent` instead of taking the element directly. Click and keydown now share one signature via the event type rather than via `(patient, row: HTMLTableRowElement)` — same shared-path effect, smaller diff._
+_This section was written after the timer; some code edits were also made post-timer:_
+- _Hide-names toggle in the roster header — privacy gesture for shoulder-surf contexts (rounds, visitors). A global toggle isn't the right shape for every scenario (emergency / handoff want names visible); per-role visibility is the production answer._
+- _Keyboard activation on rows — Enter / Space opens the detail panel. Implementation rationale (`<tr>` + `onKeyDown`, no `role="button"`) lives in **Notes** above._
 
-Things I'd do differently, gathered from inline notes:
+### Next sprint, in order
 
-**Sorting** — [PatientCensus.tsx:220-230](src/components/PatientCensus.tsx#L220-L230)
-- Status needs a semantic comparator, not lexical. `String(...).localeCompare(...)` lands Critical / Needs Attention / Stable in triage order by alphabet coincidence — add "Discharged" and it sorts between Critical and Needs Attention, which is clinically wrong. Right shape: `STATUS_RANK: Record<Patient["status"], number>` driving numeric compare.
-- Default the page to status-desc so the charge nurse lands on Critical first. Held off because it's opinionated and the fixture's room-asc happens to be the natural eye-path.
-- Per-column comparator map: age sorts as string today (fine at 2 digits, breaks at 100+); room is alphanumeric and wants natural-order; `admittedOn` wants Date compare. One `comparators[key]` lookup replaces the `localeCompare` default.
+1. **Typed comparator map for sort — status first.** `String(...).localeCompare(...)` runs every column through one lexical compare. Status is the clinical failure mode: add "Discharged" and it sorts between Critical and Needs Attention, which is wrong every shift. Age (string compare breaks at 100+) and room (alphanumeric wants natural-order) are latent in this fixture but on the same code path. *First because it's correctness, not polish — and one refactor fixes all three.* — [PatientCensus.tsx:42-47](src/components/PatientCensus.tsx#L42-L47)
 
-**Roster UI** — [PatientCensus.tsx:231-235](src/components/PatientCensus.tsx#L231-L235)
-- Dedicated search input with clear button.
-- Sticky `<thead>` once row count justifies it.
-- Dark-mode variants to match `App`'s `dark:bg-zinc-950`.
-- Map the `<th>` columns from a config array to kill header duplication if the column set grows.
+2. **ARIA grid pattern on the roster — roving tabindex + arrow keys.** Charge nurses drive this view keyboard-heavy across a full shift. Today every row is its own tab stop (Enter / Space opens), so traversing the table is N tab stops. Grid pattern collapses that to one tab stop with arrows moving between rows. *Second because it's working today — but the user the tool exists for is the one for whom "working" is the lowest bar.* — [PatientCensus.tsx:181-197](src/components/PatientCensus.tsx#L181-L197)
 
-**Keyboard / focus** — [PatientCensus.tsx:236-241](src/components/PatientCensus.tsx#L236-L241)
-- ARIA grid pattern with roving tabindex + arrow-key row navigation. Today every row is a tab stop (Enter / Space opens the panel); with N rows that's N tab stops to cross the table. Grid pattern would collapse to one tab stop with arrow keys between rows.
-- Focus trap inside the detail panel (Tab cycles within it). Skipped under timer; with one focusable element in the panel it's a non-issue today.
+### Backlog (polish, not load-bearing)
 
-**Detail layout** — [PatientCensus.tsx:85-90](src/components/PatientCensus.tsx#L85-L90)
-- Explore a split-pane that physically separates roster and detail, instead of the current master-detail swap.
-
-**Fixture data** — [PatientDetail.tsx:19-21](src/components/PatientDetail.tsx#L19-L21)
-- Seed `admittedOn` from `now - N days` so the "Day N" cue reads at realistic magnitudes. Current fixture dates are 2024, so numbers read large.
+- DOB visible on the row — hover over the age column, or a small caption beneath. Disambiguates same-name patients for right-patient verification; age alone doesn't.
+- Dark-mode variants in `PatientCensus` to match the app shell.
+- Sticky `<thead>` once the row count justifies it.
+- Dedicated search input with a clear button.
+- `<th>` columns from a config array if a 5th sortable column lands.
