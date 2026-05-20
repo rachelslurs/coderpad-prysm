@@ -42,3 +42,30 @@ src/
 - Sort state is `{ key, dir }` as one cohesive value so toggle transitions stay atomic.
 - Row accent (left border) on the first `<td>` pairs with `StatusBadge` for redundant encoding — color alone would be a WCAG fail.
 - Detail panel follows the WCAG dialog pattern: focus the close button on open, restore focus to the originating row on close.
+
+## With more time
+
+_This section (and the README itself) was written after the timer was up — consolidating the inline "would do differently" notes left in the code during the exercise._
+
+Things I'd do differently, gathered from inline notes:
+
+**Sorting** — [PatientCensus.tsx:213-223](src/components/PatientCensus.tsx#L213-L223)
+- Status needs a semantic comparator, not lexical. `String(...).localeCompare(...)` lands Critical / Needs Attention / Stable in triage order by alphabet coincidence — add "Discharged" and it sorts between Critical and Needs Attention, which is clinically wrong. Right shape: `STATUS_RANK: Record<Patient["status"], number>` driving numeric compare.
+- Default the page to status-desc so the charge nurse lands on Critical first. Held off because it's opinionated and the fixture's room-asc happens to be the natural eye-path.
+- Per-column comparator map: age sorts as string today (fine at 2 digits, breaks at 100+); room is alphanumeric and wants natural-order; `admittedOn` wants Date compare. One `comparators[key]` lookup replaces the `localeCompare` default.
+
+**Roster UI** — [PatientCensus.tsx:224-228](src/components/PatientCensus.tsx#L224-L228)
+- Dedicated search input with clear button.
+- Sticky `<thead>` once row count justifies it.
+- Dark-mode variants to match `App`'s `dark:bg-zinc-950`.
+- Map the `<th>` columns from a config array to kill header duplication if the column set grows.
+
+**Keyboard / focus** — [PatientCensus.tsx:229-233](src/components/PatientCensus.tsx#L229-L233)
+- Real keyboard nav on rows: ARIA grid pattern with arrow-key row navigation + Enter to open the panel. Current `tabIndex={-1}` only supports programmatic focus restoration after panel close, not row-as-tab-stop.
+- Focus trap inside the detail panel (Tab cycles within it). Skipped under timer; with one focusable element in the panel it's a non-issue today.
+
+**Detail layout** — [PatientCensus.tsx:85-90](src/components/PatientCensus.tsx#L85-L90)
+- Explore a split-pane that physically separates roster and detail, instead of the current master-detail swap.
+
+**Fixture data** — [PatientDetail.tsx:19-21](src/components/PatientDetail.tsx#L19-L21)
+- Seed `admittedOn` from `now - N days` so the "Day N" cue reads at realistic magnitudes. Current fixture dates are 2024, so numbers read large.
