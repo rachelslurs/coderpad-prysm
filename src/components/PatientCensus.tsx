@@ -13,13 +13,36 @@ const ROW_ACCENT: Record<Patient["status"], string> = {
 
 // Manual split — new Date("YYYY-MM-DD") parses as UTC midnight and drifts a day
 // west of GMT. Locale formatter on a local-constructed date is correct.
-const formatAdmitted = (iso: string) => {
+const parseAdmitted = (iso: string) => {
   const [year, month, day] = iso.split("-").map(Number);
-  return new Date(year, month - 1, day).toLocaleDateString(undefined, {
+  return new Date(year, month - 1, day);
+};
+
+const formatAdmitted = (iso: string) =>
+  parseAdmitted(iso).toLocaleDateString(undefined, {
     year: "numeric",
     month: "short",
     day: "numeric",
   });
+
+// "Day N" derived from today — clinically the scan cue ("Day 4" vs "Day 60").
+// Fixture admittedOn dates are 2024 so numbers read large here; the pattern is
+// the cue, not the magnitude. Would seed fixture from now-N days in prod.
+const daysSinceAdmitted = (iso: string) => {
+  const admitted = parseAdmitted(iso);
+  admitted.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return Math.max(0, Math.floor((today.getTime() - admitted.getTime()) / 86_400_000));
+};
+
+// Hero tint mirrors StatusBadge / ROW_ACCENT — same palette the row already
+// uses, so urgency carries through into the detail view. Redundant encoding
+// (status word + badge color + tinted hero) wins more on scan than minimalism.
+const DIAGNOSIS_TINT: Record<Patient["status"], string> = {
+  Critical: "bg-red-50 ring-red-600/20",
+  "Needs Attention": "bg-amber-50 ring-amber-600/20",
+  Stable: "bg-zinc-50 ring-zinc-200",
 };
 
 export default function PatientCensus() {
@@ -140,7 +163,22 @@ export default function PatientCensus() {
               Age <span className="tabular-nums">{selectedPatient.age}</span>
             </p>
 
-            <dl className="mt-6 grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
+            {/* Tier 1 — Diagnosis hero. The clinical "why are we here." Tinted by
+                status so urgency reads at a glance before the eye lands on the badge. */}
+            <div
+              className={`mt-6 rounded-md p-4 ring-1 ring-inset ${DIAGNOSIS_TINT[selectedPatient.status]}`}
+            >
+              <p className="text-[11px] font-medium uppercase tracking-wider text-zinc-500">
+                Diagnosis
+              </p>
+              <p className="mt-1 text-lg font-medium text-zinc-900">
+                {selectedPatient.diagnosis}
+              </p>
+            </div>
+
+            {/* Tier 2 — care ownership + length of stay. "Day N" leads because
+                it's the scan cue; the calendar date trails as the audit trail. */}
+            <dl className="mt-5 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
               <div>
                 <dt className="text-xs font-medium uppercase tracking-wide text-zinc-500">
                   Physician
@@ -149,25 +187,24 @@ export default function PatientCensus() {
               </div>
               <div>
                 <dt className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                  Diagnosis
-                </dt>
-                <dd className="mt-1 text-sm text-zinc-900">{selectedPatient.diagnosis}</dd>
-              </div>
-              <div>
-                <dt className="text-xs font-medium uppercase tracking-wide text-zinc-500">
                   Admitted
                 </dt>
-                <dd className="mt-1 text-sm text-zinc-900">
-                  {formatAdmitted(selectedPatient.admittedOn)}
+                <dd className="mt-1 flex items-baseline gap-2 text-sm text-zinc-900">
+                  <span className="text-base font-semibold tabular-nums">
+                    Day {daysSinceAdmitted(selectedPatient.admittedOn)}
+                  </span>
+                  <span className="text-xs text-zinc-500">
+                    since {formatAdmitted(selectedPatient.admittedOn)}
+                  </span>
                 </dd>
               </div>
-              <div>
-                <dt className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                  Insurance
-                </dt>
-                <dd className="mt-1 text-sm text-zinc-900">{selectedPatient.insurance}</dd>
-              </div>
             </dl>
+
+            {/* Tier 3 — billing context, demoted. Same data, lower visual weight. */}
+            <p className="mt-6 border-t border-zinc-100 pt-4 text-xs text-zinc-500">
+              Insurance ·{" "}
+              <span className="text-zinc-700">{selectedPatient.insurance}</span>
+            </p>
           </div>
         </aside>
       </section>
@@ -279,8 +316,7 @@ export default function PatientCensus() {
 //   the change is opinionated and the fixture's room-asc happens to be the natural eye-path.
 // - Numeric/locale-aware comparators per column (age sorts as string today — fine at 2 digits,
 //   breaks at 100+). Plumbing a comparator map per column key is the right shape.
-// - Swap the inline <input> for the existing <SearchInput> at src/SearchInput.tsx
-//   once Step 2's effect is fixed — it brings the clear button "for free."
+// - Dedicated search input with clear button.
 // - Sticky thead once the row count justifies it.
 // - Dark-mode variants to match App's dark:bg-zinc-950.
 // - Map the <th> columns from a config array (PatientsTable.tsx pattern) to kill
