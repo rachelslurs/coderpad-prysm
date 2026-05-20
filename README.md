@@ -45,7 +45,9 @@ src/
 
 ## With more time
 
-_This section (and the README itself) was written after the timer was up — consolidating the inline "would do differently" notes left in the code during the exercise._
+_This section (and the README itself) was written after the timer was up — consolidating the inline "would do differently" notes left in the code during the exercise. Some code edits were also made after the timer, not during the exercise:_
+- _The "hide patient name" toggle in the roster header._
+- _Keyboard activation on rows (see **Keyboard / focus** below) — Enter / Space to open the detail panel._
 
 Things I'd do differently, gathered from inline notes:
 
@@ -61,7 +63,7 @@ Things I'd do differently, gathered from inline notes:
 - Map the `<th>` columns from a config array to kill header duplication if the column set grows.
 
 **Keyboard / focus** — [PatientCensus.tsx:229-233](src/components/PatientCensus.tsx#L229-L233)
-- Real keyboard nav on rows: ARIA grid pattern with arrow-key row navigation + Enter to open the panel. Current `tabIndex={-1}` only supports programmatic focus restoration after panel close, not row-as-tab-stop.
+- ARIA grid pattern with roving tabindex + arrow-key row navigation. Today every row is a tab stop (Enter / Space opens the panel); with N rows that's N tab stops to cross the table. Grid pattern would collapse to one tab stop with arrow keys between rows.
 - Focus trap inside the detail panel (Tab cycles within it). Skipped under timer; with one focusable element in the panel it's a non-issue today.
 
 **Detail layout** — [PatientCensus.tsx:85-90](src/components/PatientCensus.tsx#L85-L90)

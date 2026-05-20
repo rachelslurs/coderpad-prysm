@@ -57,7 +57,7 @@ export default function PatientCensus() {
 
   const openPanel = (
     patient: Patient,
-    e: React.MouseEvent<HTMLTableRowElement>
+    e: React.SyntheticEvent<HTMLTableRowElement>
   ) => {
     lastFocusedRowRef.current = e.currentTarget;
     setSelectedPatient(patient);
@@ -181,12 +181,19 @@ export default function PatientCensus() {
           {visiblePatients.map((patient) => (
             <tr
               key={patient.id}
-              // tabIndex=-1 is programmatic-only focus — keeps rows out of the tab
-              // order (no real grid keyboard pattern here yet) but lets us restore
-              // focus to the originating row after the detail panel closes.
-              tabIndex={-1}
+              // Each row is a tab stop so keyboard users can reach + activate it.
+              // Space is preventDefault'd to stop page-scroll (default for focusable
+              // non-button elements). Grid pattern w/ roving tabindex would be better
+              // once row counts grow — see "with more time" below.
+              tabIndex={0}
               className="cursor-pointer border-b border-zinc-100 transition-colors hover:bg-zinc-50 focus:outline-none focus-visible:bg-zinc-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue-600"
               onClick={(e) => openPanel(patient, e)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  openPanel(patient, e);
+                }
+              }}
             >
               <td className={`px-3 py-3 align-middle font-mono text-xs text-zinc-600 ${ROW_ACCENT[patient.status]}`}>
                 {patient.room}
@@ -226,8 +233,9 @@ export default function PatientCensus() {
 // - Dark-mode variants to match App's dark:bg-zinc-950.
 // - Map the <th> columns from a config array (PatientsTable.tsx pattern) to kill
 //   the header duplication if the column set grows.
-// - Real keyboard nav on rows: ARIA grid pattern with arrow-key row navigation
-//   + Enter to open the panel. Current tabIndex=-1 only supports programmatic focus
-//   restoration after panel close, not row-as-tab-stop.
+// - ARIA grid pattern with roving tabindex + arrow-key row navigation. Today
+//   every row is a tab stop (Enter / Space opens the panel); with N rows that's
+//   N tab stops to cross the table. Grid pattern collapses to one tab stop with
+//   arrow keys to move between rows.
 // - Focus trap inside the detail panel (Tab cycles within it). Skipping under
 //   timer; with one focusable element in the panel it's a non-issue today.
