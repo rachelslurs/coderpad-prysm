@@ -22,7 +22,7 @@ const toInitials = (name: string) =>
 export default function PatientCensus() {
   const [searchQuery, setSearchQuery] = useState("");
   // { key, dir } as one cohesive value so toggle transitions stay atomic —
-  // never catch a render where dir flipped but key didn't. Mirrors PatientsTable.tsx.
+  // never catch a render where dir flipped but key didn't.
   const [sort, setSort] = useState<{ key: keyof Patient; dir: "asc" | "desc" }>({
     key: "room",
     dir: "asc",
@@ -63,7 +63,7 @@ export default function PatientCensus() {
     setSelectedPatient(patient);
   };
 
-  // Same-key flips direction; new key resets to asc. Pattern from PatientsTable.tsx.
+  // Same-key flips direction; new key resets to asc.
   const handleSort = (key: keyof Patient) => {
     setSort((prev) =>
       prev.key === key
@@ -231,8 +231,8 @@ export default function PatientCensus() {
 // - Dedicated search input with clear button.
 // - Sticky thead once the row count justifies it.
 // - Dark-mode variants to match App's dark:bg-zinc-950.
-// - Map the <th> columns from a config array (PatientsTable.tsx pattern) to kill
-//   the header duplication if the column set grows.
+// - Map the <th> columns from a config array to kill the header duplication
+//   if the column set grows.
 // - ARIA grid pattern with roving tabindex + arrow-key row navigation. Today
 //   every row is a tab stop (Enter / Space opens the panel); with N rows that's
 //   N tab stops to cross the table. Grid pattern collapses to one tab stop with
