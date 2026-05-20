@@ -12,6 +12,13 @@ const ROW_ACCENT: Record<Patient["status"], string> = {
   Stable: "border-l-4 border-l-transparent",
 };
 
+const toInitials = (name: string) =>
+  name
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part[0]!.toUpperCase())
+    .join("");
+
 export default function PatientCensus() {
   const [searchQuery, setSearchQuery] = useState("");
   // { key, dir } as one cohesive value so toggle transitions stay atomic —
@@ -21,6 +28,7 @@ export default function PatientCensus() {
     dir: "asc",
   });
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [hideNames, setHideNames] = useState(false);
 
   // Restore focus to the originating row on close so keyboard users don't lose
   // their place. The close-button-on-open side lives in PatientDetail.
@@ -98,14 +106,25 @@ export default function PatientCensus() {
             Unit <strong className="font-semibold text-zinc-900">1 North</strong> · {visiblePatients.length} patients
           </p>
         </div>
-        <input
-          type="text"
-          aria-label="Search by patient name"
-          className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 sm:w-72"
-          placeholder="Search by name..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+          <label className="inline-flex items-center gap-2 text-sm text-zinc-700">
+            <input
+              type="checkbox"
+              className="h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900/20"
+              checked={hideNames}
+              onChange={(e) => setHideNames(e.target.checked)}
+            />
+            Hide patient name
+          </label>
+          <input
+            type="text"
+            aria-label="Search by patient name"
+            className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 sm:w-72"
+            placeholder="Search by name..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
       </header>
 
       <table className="w-full border-collapse text-sm text-zinc-900">
@@ -128,7 +147,7 @@ export default function PatientCensus() {
             <th
               scope="col"
               aria-sort={ariaSortFor("name")}
-              className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-zinc-500"
+              className="min-w-[11rem] px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-zinc-500"
             >
               <button
                 type="button"
@@ -172,7 +191,9 @@ export default function PatientCensus() {
               <td className={`px-3 py-3 align-middle font-mono text-xs text-zinc-600 ${ROW_ACCENT[patient.status]}`}>
                 {patient.room}
               </td>
-              <td className="px-3 py-3 align-middle font-medium text-zinc-900">{patient.name}</td>
+              <td className="px-3 py-3 align-middle font-medium text-zinc-900">
+                {hideNames ? toInitials(patient.name) : patient.name}
+              </td>
               <td className="px-3 py-3 align-middle tabular-nums text-zinc-700">{patient.age}</td>
               <td className="px-3 py-3 align-middle text-zinc-600">{patient.physician}</td>
               <td className="px-3 py-3 align-middle text-zinc-600">{patient.diagnosis}</td>
