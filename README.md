@@ -47,7 +47,9 @@ src/
 
 _This section (and the README itself) was written after the timer was up — consolidating the inline "would do differently" notes left in the code during the exercise. Some code edits were also made after the timer, not during the exercise:_
 - _The "hide patient name" toggle in the roster header._
-- _Keyboard activation on rows (see **Keyboard / focus** below) — Enter / Space to open the detail panel._
+- _Keyboard activation on rows (see **Keyboard / focus** below) — Enter / Space to open the detail panel. Two deliberate deviations from the literal spec:_
+  - _No `role="button"` on the `<tr>`. Applying it would override the row's table semantics — screen readers stop announcing the cells (Room → Name → Age → Physician → Diagnosis → Status) and collapse the row to one button label. The clean pattern for "interactive row in a table" is focusable `<tr>` + `onKeyDown`, with the ARIA grid pattern as the fuller answer (still listed under **Keyboard / focus** as a remaining gap)._
+  - _`openPanel` widened to `SyntheticEvent` instead of taking the element directly. Click and keydown now share one signature via the event type rather than via `(patient, row: HTMLTableRowElement)` — same shared-path effect, smaller diff._
 
 Things I'd do differently, gathered from inline notes:
 
