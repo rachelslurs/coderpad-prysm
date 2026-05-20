@@ -230,7 +230,6 @@ export default function PatientCensus() {
 //   want Date compare. One comparators[key] lookup replaces the localeCompare default.
 // - Dedicated search input with clear button.
 // - Sticky thead once the row count justifies it.
-// - Dark-mode variants to match App's dark:bg-zinc-950.
 // - Map the <th> columns from a config array to kill the header duplication
 //   if the column set grows.
 // - ARIA grid pattern with roving tabindex + arrow-key row navigation. Today

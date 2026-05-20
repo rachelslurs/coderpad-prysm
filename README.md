@@ -58,8 +58,9 @@ _This section was written after the timer; some code edits were also made post-t
 
 ### Backlog (polish, not load-bearing)
 
+_Listed roughly in order of user-impact, not effort._
+
 - DOB visible on the row — hover over the age column, or a small caption beneath. Disambiguates same-name patients for right-patient verification; age alone doesn't.
-- Dark-mode variants in `PatientCensus` to match the app shell.
 - Sticky `<thead>` once the row count justifies it.
 - Dedicated search input with a clear button.
 - `<th>` columns from a config array if a 5th sortable column lands.
