@@ -204,8 +204,8 @@ export default function PatientCensus() {
             <col className="w-60" />
             <col className="w-16" />
             <col className="w-44" />
-            <col />
-            <col className="w-44" />
+            <col className="w-72" />
+            <col className="w-56" />
           </colgroup>
           <thead className="sticky top-0 z-10">
             <tr>

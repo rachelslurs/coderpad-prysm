@@ -6,7 +6,7 @@ import { AlertOctagon, AlertTriangle, CheckCircle, type LucideIcon } from "lucid
 // in the roster commit. Redundant encoding (color + icon + text label) passes
 // WCAG "don't rely on color alone."
 const BASE =
-  "inline-flex items-center gap-1.5 rounded border px-2.5 py-1 text-sm font-medium transition-all";
+  "inline-flex items-center gap-1.5 whitespace-nowrap rounded border px-2.5 py-1 text-sm font-medium transition-all";
 
 const STATUS_VARIANT: Record<Patient["status"], string> = {
   Critical:
