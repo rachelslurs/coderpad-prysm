@@ -37,7 +37,7 @@ export default function PatientDetail({
   const los = calculateLOS(patient.admittedOn);
 
   const tierLabel =
-    "mb-3 font-['Archivo'] text-sm font-bold uppercase tracking-widest text-teal-700/70";
+    "mb-3 font-['Archivo'] text-sm font-bold uppercase tracking-widest text-slate-500";
   const fieldLabel = "text-sm font-semibold text-slate-500";
   const fieldValue = "text-xl font-bold text-slate-900";
 
@@ -49,8 +49,6 @@ export default function PatientDetail({
       tabIndex={-1}
       className="absolute inset-0 z-20 flex flex-col bg-slate-50 shadow-2xl"
     >
-      <div aria-hidden="true" className="h-1.5 w-full flex-none bg-teal-500" />
-
       <header className="flex-none border-b border-slate-200 bg-white px-6 py-5">
         <div className="-ml-2 mb-4 flex items-center gap-3">
           <button
@@ -59,7 +57,7 @@ export default function PatientDetail({
             data-testid="close-button"
             onClick={onClose}
             aria-label="Back to roster"
-            className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-base font-bold text-slate-500 transition-colors hover:bg-teal-50 hover:text-teal-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
+            className="inline-flex items-center gap-1.5 rounded border border-transparent px-3 py-2 text-base font-bold text-slate-500 transition-colors hover:bg-teal-50 hover:text-teal-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
           >
             <ArrowLeft aria-hidden="true" className="h-4 w-4" />
             <span>Back</span>

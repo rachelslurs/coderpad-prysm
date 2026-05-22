@@ -29,12 +29,13 @@ const compareBy = (key: keyof Patient, a: Patient, b: Patient) => {
 };
 
 // First-cell left edge carries the status accent, paired with the badge for
-// redundant encoding. Selection swaps it to solid teal in the same slot so the
-// indicator location is stable.
+// redundant encoding. Implemented as an inset box-shadow rather than a real
+// border so it doesn't push cell content right (which would misalign with the
+// no-border thead).
 const ROW_ACCENT: Record<Patient["status"], string> = {
-  Critical: "border-l-4 border-l-rose-500",
-  "Needs Attention": "border-l-4 border-l-amber-500",
-  Stable: "border-l-4 border-l-transparent",
+  Critical: "shadow-[inset_4px_0_0_#f43f5e]",
+  "Needs Attention": "shadow-[inset_4px_0_0_#f59e0b]",
+  Stable: "",
 };
 
 export default function PatientCensus() {
@@ -115,7 +116,7 @@ export default function PatientCensus() {
       return (
         <ArrowUpDown
           aria-hidden="true"
-          className="ml-1 inline-block h-3 w-3 text-slate-400"
+          className="ml-1 inline-block h-4 w-4 text-slate-400"
         />
       );
     }
@@ -123,7 +124,7 @@ export default function PatientCensus() {
     return (
       <Arrow
         aria-hidden="true"
-        className="ml-1 inline-block h-3 w-3 text-teal-600"
+        className="ml-1 inline-block h-4 w-4 text-teal-600"
       />
     );
   };
@@ -132,15 +133,14 @@ export default function PatientCensus() {
     "bg-white px-6 py-5 text-left font-['Archivo'] text-lg font-bold whitespace-nowrap transition-colors";
   const thInactive = `${thBase} border-b-2 border-slate-200 text-slate-700`;
   // Sortable headers carry click+keyboard handlers on the <th> itself so the
-  // entire cell is the hit target. Active-sort gets teal text/bg + a thicker
-  // bottom border as a directional cue (asc=2px, desc=4px, mirroring the
-  // heavier ArrowDown icon).
+  // entire cell is the hit target. Active-sort gets teal text/bg/border —
+  // keep border-b-2 in both directions so nothing visually jumps when the
+  // user toggles the direction.
   const sortableTh =
     "cursor-pointer select-none hover:text-teal-700 focus:outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-teal-500";
   const thFor = (key: keyof Patient) => {
     if (sort.key !== key) return `${thInactive} ${sortableTh}`;
-    const dirBorder = sort.dir === "asc" ? "border-b-2" : "border-b-4";
-    return `${thBase} ${dirBorder} border-teal-500 bg-teal-50/60 text-teal-700 ${sortableTh}`;
+    return `${thBase} border-b-2 border-teal-500 bg-teal-50/60 text-teal-700 ${sortableTh}`;
   };
   const sortableThProps = (key: keyof Patient) => ({
     scope: "col" as const,
@@ -158,19 +158,16 @@ export default function PatientCensus() {
 
   return (
     <>
-      <header className="flex flex-none items-center justify-between border-b border-slate-800 bg-slate-900 px-6 py-5 shadow-md">
-        <div className="flex items-center gap-6">
-          <h1 className="hidden whitespace-nowrap font-['Archivo'] text-xl font-black tracking-tight text-white md:block">
-            1 North
-            <span className="ml-2 text-lg font-medium text-slate-400">
-              Census
-            </span>
-          </h1>
+      <header className="grid flex-none grid-cols-2 items-center border-b border-slate-800 bg-slate-900 px-6 py-5 shadow-md md:grid-cols-3">
+        <h1 className="hidden items-baseline gap-2 whitespace-nowrap font-['Archivo'] text-xl font-black tracking-tight text-white md:inline-flex">
+          <span>1 North</span>
+          <span className="text-lg font-medium text-slate-400">Census</span>
+        </h1>
 
-          <div className="group relative">
+        <div className="group relative justify-self-start md:justify-self-center">
             <Search
               aria-hidden="true"
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-teal-400"
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-slate-200"
             />
             <input
               ref={searchInputRef}
@@ -190,7 +187,7 @@ export default function PatientCensus() {
                 }
               }}
               onBlur={() => setSearchFocused(false)}
-              className="w-80 rounded border border-slate-700 bg-slate-800 py-2 pl-10 pr-9 text-base text-slate-100 placeholder:text-slate-400 focus:bg-slate-950 focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="w-80 rounded border border-slate-700 bg-slate-800 py-2 pl-10 pr-9 text-base text-slate-100 placeholder:text-slate-400 focus:border-slate-400 focus:bg-slate-950 focus:text-white focus:outline-none focus:ring-2 focus:ring-slate-500"
             />
             {searchQuery ? (
               <button
@@ -211,17 +208,16 @@ export default function PatientCensus() {
                 </kbd>
               )
             )}
-          </div>
         </div>
 
         <button
           type="button"
           onClick={() => setHideNames(!hideNames)}
           aria-pressed={hideNames}
-          className={`inline-flex items-center gap-2 whitespace-nowrap rounded-md px-3 py-1.5 text-base font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 ${
+          className={`inline-flex items-center gap-2 justify-self-end whitespace-nowrap rounded border px-3 py-2 text-base font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 ${
             hideNames
-              ? "bg-teal-500 text-white hover:bg-teal-400"
-              : "border border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700"
+              ? "border-teal-500 bg-teal-500 text-white hover:bg-teal-400"
+              : "border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700"
           }`}
         >
           {hideNames ? (

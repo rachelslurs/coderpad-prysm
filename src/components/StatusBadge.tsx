@@ -26,21 +26,16 @@ const STATUS_ICON: Record<Patient["status"], LucideIcon> = {
   Stable: CheckCircle,
 };
 
-const ICON_TINT: Record<Patient["status"], string> = {
-  Critical: "text-rose-600",
-  "Needs Attention": "text-amber-600",
-  Stable: "text-slate-500",
-};
-
 type StatusBadgeProps = {
   status: Patient["status"];
 };
 
 export default function StatusBadge({ status }: StatusBadgeProps) {
   const Icon = STATUS_ICON[status];
+  // Icon uses currentColor by default, so it inherits the badge's label color.
   return (
     <div className={`${BASE} ${STATUS_VARIANT[status]}`}>
-      <Icon className={`h-3.5 w-3.5 ${ICON_TINT[status]}`} aria-hidden="true" />
+      <Icon className="h-3.5 w-3.5" aria-hidden="true" />
       <span>{status}</span>
     </div>
   );
