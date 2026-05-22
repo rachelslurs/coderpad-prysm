@@ -101,7 +101,9 @@ export default function PatientCensus() {
     );
   };
 
-  const ariaSortFor = (key: keyof Patient) =>
+  const ariaSortFor = (
+    key: keyof Patient
+  ): "ascending" | "descending" | "none" =>
     sort.key === key
       ? sort.dir === "asc"
         ? "ascending"
@@ -127,25 +129,48 @@ export default function PatientCensus() {
   };
 
   const thBase =
-    "border-b-2 border-slate-200 bg-white px-4 py-3 text-left font-['Archivo'] text-base font-bold text-slate-700";
-  const sortButton =
-    "inline-flex items-center gap-1 rounded transition-colors hover:text-teal-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500";
+    "bg-white px-6 py-5 text-left font-['Archivo'] text-lg font-bold whitespace-nowrap transition-colors";
+  const thInactive = `${thBase} border-b-2 border-slate-200 text-slate-700`;
+  // Sortable headers carry click+keyboard handlers on the <th> itself so the
+  // entire cell is the hit target. Active-sort gets teal text/bg + a thicker
+  // bottom border as a directional cue (asc=2px, desc=4px, mirroring the
+  // heavier ArrowDown icon).
+  const sortableTh =
+    "cursor-pointer select-none hover:text-teal-700 focus:outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-teal-500";
+  const thFor = (key: keyof Patient) => {
+    if (sort.key !== key) return `${thInactive} ${sortableTh}`;
+    const dirBorder = sort.dir === "asc" ? "border-b-2" : "border-b-4";
+    return `${thBase} ${dirBorder} border-teal-500 bg-teal-50/60 text-teal-700 ${sortableTh}`;
+  };
+  const sortableThProps = (key: keyof Patient) => ({
+    scope: "col" as const,
+    "aria-sort": ariaSortFor(key),
+    className: thFor(key),
+    tabIndex: 0,
+    onClick: () => handleSort(key),
+    onKeyDown: (e: React.KeyboardEvent<HTMLTableCellElement>) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        handleSort(key);
+      }
+    },
+  });
 
   return (
     <>
-      <header className="flex h-16 flex-none items-center justify-between border-b border-slate-800 bg-slate-900 px-6 shadow-md">
+      <header className="flex flex-none items-center justify-between border-b border-slate-800 bg-slate-900 px-6 py-5 shadow-md">
         <div className="flex items-center gap-6">
-          <h1 className="font-['Archivo'] text-2xl font-black tracking-tight text-white">
-            1 North{" "}
-            <span className="ml-2 rounded bg-teal-500/10 px-2 py-0.5 text-base font-medium text-teal-400">
+          <h1 className="hidden whitespace-nowrap font-['Archivo'] text-xl font-black tracking-tight text-white md:block">
+            1 North
+            <span className="ml-2 text-lg font-medium text-slate-400">
               Census
             </span>
           </h1>
 
-          <div className="relative">
+          <div className="group relative">
             <Search
               aria-hidden="true"
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-teal-500/70"
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-teal-400"
             />
             <input
               ref={searchInputRef}
@@ -165,7 +190,7 @@ export default function PatientCensus() {
                 }
               }}
               onBlur={() => setSearchFocused(false)}
-              className="w-64 rounded border border-slate-700 bg-slate-800 py-1.5 pl-9 pr-8 text-sm text-slate-100 placeholder:text-slate-400 focus:bg-slate-950 focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="w-80 rounded border border-slate-700 bg-slate-800 py-2 pl-10 pr-9 text-base text-slate-100 placeholder:text-slate-400 focus:bg-slate-950 focus:outline-none focus:ring-2 focus:ring-teal-500"
             />
             {searchQuery ? (
               <button
@@ -180,7 +205,7 @@ export default function PatientCensus() {
               !searchFocused && (
                 <kbd
                   aria-hidden="true"
-                  className="pointer-events-none absolute right-2 top-1/2 hidden -translate-y-1/2 select-none rounded border border-slate-700 bg-slate-800/80 px-1.5 py-0.5 font-mono text-[10px] font-bold tracking-widest text-slate-400 sm:inline-block"
+                  className="pointer-events-none absolute right-2 top-1/2 hidden -translate-y-1/2 select-none rounded border border-slate-700 bg-slate-800/80 px-1.5 py-0.5 font-mono text-xs font-bold tracking-widest text-slate-400 sm:inline-block"
                 >
                   /
                 </kbd>
@@ -193,7 +218,7 @@ export default function PatientCensus() {
           type="button"
           onClick={() => setHideNames(!hideNames)}
           aria-pressed={hideNames}
-          className={`inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 ${
+          className={`inline-flex items-center gap-2 whitespace-nowrap rounded-md px-3 py-1.5 text-base font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 ${
             hideNames
               ? "bg-teal-500 text-white hover:bg-teal-400"
               : "border border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700"
@@ -213,7 +238,7 @@ export default function PatientCensus() {
         {/* table-fixed + colgroup locks column widths so filtered or empty
             results don't reflow the layout. Diagnosis is the only flexible
             column — it absorbs leftover width. */}
-        <table className="w-full table-fixed border-collapse text-sm text-slate-900">
+        <table className="w-full table-fixed border-collapse text-lg text-slate-900">
           <colgroup>
             <col className="w-20" />
             <col className="w-60" />
@@ -224,52 +249,32 @@ export default function PatientCensus() {
           </colgroup>
           <thead className="sticky top-0 z-10">
             <tr>
-              <th scope="col" aria-sort={ariaSortFor("room")} className={thBase}>
-                <button
-                  type="button"
-                  onClick={() => handleSort("room")}
-                  className={sortButton}
-                >
+              <th {...sortableThProps("room")}>
+                <span className="flex items-center justify-between gap-2">
                   <span>Room</span>
                   <SortIcon columnKey="room" />
-                </button>
+                </span>
               </th>
-              <th
-                scope="col"
-                aria-sort={ariaSortFor("name")}
-                className={`${thBase} min-w-44`}
-              >
-                <button
-                  type="button"
-                  onClick={() => handleSort("name")}
-                  className={sortButton}
-                >
+              <th {...sortableThProps("name")}>
+                <span className="flex items-center justify-between gap-2">
                   <span>Patient</span>
                   <SortIcon columnKey="name" />
-                </button>
+                </span>
               </th>
-              <th scope="col" className={thBase}>
+              <th scope="col" className={thInactive}>
                 Age
               </th>
-              <th scope="col" className={thBase}>
+              <th scope="col" className={thInactive}>
                 Physician
               </th>
-              <th scope="col" className={thBase}>
+              <th scope="col" className={thInactive}>
                 Diagnosis
               </th>
-              <th
-                scope="col"
-                aria-sort={ariaSortFor("status")}
-                className={thBase}
-              >
-                <button
-                  type="button"
-                  onClick={() => handleSort("status")}
-                  className={sortButton}
-                >
+              <th {...sortableThProps("status")}>
+                <span className="flex items-center justify-between gap-2">
                   <span>Status</span>
                   <SortIcon columnKey="status" />
-                </button>
+                </span>
               </th>
             </tr>
           </thead>
@@ -281,7 +286,7 @@ export default function PatientCensus() {
                 // transition-[background-color] (not transition-colors) so the
                 // divide-y border between rows doesn't animate when sort
                 // reorders the DOM — border-color is part of transition-colors.
-                className="group cursor-pointer transition-[background-color] hover:bg-slate-50 focus:outline-none focus-visible:bg-slate-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-teal-600"
+                className="group cursor-pointer transition-[background-color] hover:bg-teal-50 focus:outline-none focus-visible:bg-teal-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-teal-600"
                 onClick={(e) => openPanel(patient, e)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
@@ -291,23 +296,23 @@ export default function PatientCensus() {
                 }}
               >
                 <td
-                  className={`px-4 py-3.5 align-middle font-['Archivo'] text-sm text-slate-600 ${ROW_ACCENT[patient.status]}`}
+                  className={`px-6 py-3.5 align-middle font-['Archivo'] text-base text-slate-600 ${ROW_ACCENT[patient.status]}`}
                 >
                   {formatRoom(patient.room)}
                 </td>
-                <td className="px-4 py-3.5 align-middle font-['Archivo'] text-lg font-black text-slate-900">
+                <td className="px-6 py-3.5 align-middle font-['Archivo'] text-xl font-black text-slate-900">
                   {hideNames ? toInitials(patient.name) : patient.name}
                 </td>
-                <td className="px-4 py-3.5 align-middle tabular-nums text-slate-700">
+                <td className="px-6 py-3.5 align-middle tabular-nums text-slate-700">
                   {patient.age}
                 </td>
-                <td className="px-4 py-3.5 align-middle text-slate-600">
+                <td className="px-6 py-3.5 align-middle text-slate-600">
                   {patient.physician}
                 </td>
-                <td className="px-4 py-3.5 align-middle text-slate-600">
+                <td className="px-6 py-3.5 align-middle text-slate-600">
                   {patient.diagnosis}
                 </td>
-                <td className="px-4 py-3.5 align-middle">
+                <td className="px-6 py-3.5 align-middle">
                   <StatusBadge status={patient.status} />
                 </td>
               </tr>
@@ -318,7 +323,7 @@ export default function PatientCensus() {
         {visiblePatients.length === 0 && (
           <div
             role="status"
-            className="px-4 py-12 text-center text-sm text-slate-500"
+            className="px-4 py-12 text-center text-base text-slate-500"
           >
             No patients match your search.
           </div>
