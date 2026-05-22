@@ -50,7 +50,7 @@ export default function PatientDetail({
       className="absolute inset-0 z-20 flex flex-col bg-slate-50 shadow-2xl"
     >
       <header className="flex-none border-b border-slate-200 bg-white px-6 py-5">
-        <div className="-ml-2 mb-4 flex items-center gap-3">
+        <div className="-ml-2 mb-4 flex items-center gap-1.5">
           <button
             type="button"
             ref={closeButtonRef}
@@ -72,7 +72,7 @@ export default function PatientDetail({
 
         <div className="flex items-start justify-between pr-2">
           <div>
-            <h2 className="mb-3 font-['Archivo'] text-4xl font-black leading-none tracking-tight text-slate-900">
+            <h2 className="mb-3 font-['Archivo'] text-4xl font-black leading-tight tracking-tight text-slate-900">
               {displayName}
             </h2>
             <div className="mb-1 flex items-baseline font-['Archivo'] text-base font-bold uppercase tracking-widest text-slate-600">
@@ -88,7 +88,6 @@ export default function PatientDetail({
       <div className="flex-1 space-y-8 overflow-y-auto p-6">
         {/* TIER 1 — Clinical focus. The "why are we here." */}
         <section>
-          <h3 className={tierLabel}>Clinical Focus</h3>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="flex items-center gap-3 rounded-md border border-slate-200 bg-white p-4 shadow-sm md:col-span-2">
               <div className="rounded bg-teal-50 p-2 text-teal-600">
