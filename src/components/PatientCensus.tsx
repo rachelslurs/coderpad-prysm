@@ -195,7 +195,18 @@ export default function PatientCensus() {
       </header>
 
       <main className="flex-1 overflow-auto">
-        <table className="w-full border-collapse text-sm text-slate-900">
+        {/* table-fixed + colgroup locks column widths so filtered or empty
+            results don't reflow the layout. Diagnosis is the only flexible
+            column — it absorbs leftover width. */}
+        <table className="w-full table-fixed border-collapse text-sm text-slate-900">
+          <colgroup>
+            <col className="w-20" />
+            <col className="w-60" />
+            <col className="w-16" />
+            <col className="w-44" />
+            <col />
+            <col className="w-44" />
+          </colgroup>
           <thead className="sticky top-0 z-10">
             <tr>
               <th scope="col" aria-sort={ariaSortFor("room")} className={thBase}>
