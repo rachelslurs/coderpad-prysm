@@ -44,8 +44,32 @@ export default function PatientCensus() {
   );
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [hideNames, setHideNames] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
 
   const lastFocusedRowRef = useRef<HTMLTableRowElement | null>(null);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+
+  // "/" anywhere focuses the search input — common pattern (GitHub, Slack,
+  // GitLab). Skip when the user is already typing into a field so a literal
+  // slash still types as a character there.
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "/") return;
+      const t = e.target as HTMLElement | null;
+      if (
+        t &&
+        (t.tagName === "INPUT" ||
+          t.tagName === "TEXTAREA" ||
+          t.isContentEditable)
+      ) {
+        return;
+      }
+      e.preventDefault();
+      searchInputRef.current?.focus();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   const visiblePatients = [...PATIENTS]
     .filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -124,14 +148,26 @@ export default function PatientCensus() {
               className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-teal-500/70"
             />
             <input
+              ref={searchInputRef}
               type="text"
-              aria-label="Search by patient name"
+              aria-label="Search by patient name (shortcut: press / from anywhere)"
               placeholder="Find patient..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => {
+                setSearchFocused(true);
+                // Focusing search is an intent shift back to the roster — close
+                // the detail overlay if it's open. Null out the row-restore ref
+                // first so the close effect doesn't steal focus from the input.
+                if (selectedPatient) {
+                  lastFocusedRowRef.current = null;
+                  setSelectedPatient(null);
+                }
+              }}
+              onBlur={() => setSearchFocused(false)}
               className="w-64 rounded border border-slate-700 bg-slate-800 py-1.5 pl-9 pr-8 text-sm text-slate-100 placeholder:text-slate-400 focus:bg-slate-950 focus:outline-none focus:ring-2 focus:ring-teal-500"
             />
-            {searchQuery && (
+            {searchQuery ? (
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
@@ -140,6 +176,15 @@ export default function PatientCensus() {
               >
                 <X className="h-3.5 w-3.5" />
               </button>
+            ) : (
+              !searchFocused && (
+                <kbd
+                  aria-hidden="true"
+                  className="pointer-events-none absolute right-2 top-1/2 hidden -translate-y-1/2 select-none rounded border border-slate-700 bg-slate-800/80 px-1.5 py-0.5 font-mono text-[10px] font-bold tracking-widest text-slate-400 sm:inline-block"
+                >
+                  /
+                </kbd>
+              )
             )}
           </div>
         </div>
