@@ -5,9 +5,8 @@ import {
   X,
   Eye,
   EyeOff,
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import StatusBadge from "./StatusBadge";
 import PatientDetail from "./PatientDetail";
@@ -167,21 +166,26 @@ export default function PatientCensus() {
         : "descending"
       : "none";
 
+  // Stacked chevrons so both directions are always visible — the active one
+  // lights teal, the other stays slate. Reads more clearly than a single
+  // arrow that swaps in/out: the user can see which direction "more sort"
+  // would go.
   const SortIcon = ({ columnKey }: { columnKey: keyof Patient }) => {
-    if (sort.key !== columnKey) {
-      return (
-        <ArrowUpDown
-          aria-hidden="true"
-          className="ml-1 inline-block h-4 w-4 text-slate-400"
-        />
-      );
-    }
-    const Arrow = sort.dir === "asc" ? ArrowUp : ArrowDown;
+    const isActive = sort.key === columnKey;
+    const ascActive = isActive && sort.dir === "asc";
+    const descActive = isActive && sort.dir === "desc";
     return (
-      <Arrow
+      <span
         aria-hidden="true"
-        className="ml-1 inline-block h-4 w-4 text-teal-600"
-      />
+        className="ml-1 inline-flex flex-col leading-none"
+      >
+        <ChevronUp
+          className={`h-4 w-4 ${ascActive ? "text-teal-600" : "text-slate-400"}`}
+        />
+        <ChevronDown
+          className={`-mt-1.5 h-4 w-4 ${descActive ? "text-teal-600" : "text-slate-400"}`}
+        />
+      </span>
     );
   };
 
@@ -295,9 +299,9 @@ export default function PatientCensus() {
             column — it absorbs leftover width. */}
         <table className="w-full table-fixed border-collapse text-lg text-slate-900">
           <colgroup>
-            <col className="w-20" />
+            <col className="w-32" />
             <col className="w-60" />
-            <col className="w-16" />
+            <col className="w-20" />
             <col className="w-44" />
             <col className="w-72" />
             <col className="w-56" />
@@ -305,13 +309,13 @@ export default function PatientCensus() {
           <thead className="sticky top-0 z-10">
             <tr>
               <th {...sortableThProps("room")}>
-                <span className="flex items-center justify-between gap-2">
+                <span className="flex w-full items-center justify-between gap-2">
                   <span>Room</span>
                   <SortIcon columnKey="room" />
                 </span>
               </th>
               <th {...sortableThProps("name")}>
-                <span className="flex items-center justify-between gap-2">
+                <span className="flex w-full items-center justify-between gap-2">
                   <span>Patient</span>
                   <SortIcon columnKey="name" />
                 </span>
@@ -326,7 +330,7 @@ export default function PatientCensus() {
                 Diagnosis
               </th>
               <th {...sortableThProps("status")}>
-                <span className="flex items-center justify-between gap-2">
+                <span className="flex w-full items-center justify-between gap-2">
                   <span>Status</span>
                   <SortIcon columnKey="status" />
                 </span>
