@@ -283,6 +283,7 @@ export default function PatientCensus() {
         {selectedPatient && (
           <PatientDetail
             patient={selectedPatient}
+            hideNames={hideNames}
             onClose={() => setSelectedPatient(null)}
           />
         )}

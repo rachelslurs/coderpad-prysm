@@ -2,14 +2,20 @@ import { useEffect, useRef } from "react";
 import type { Patient } from "../../data/patients.ts";
 import { ArrowLeft, Stethoscope, Clock } from "lucide-react";
 import StatusBadge from "./StatusBadge";
-import { formatRoom, calculateLOS } from "./format";
+import { formatRoom, toInitials, calculateLOS } from "./format";
 
 type PatientDetailProps = {
   patient: Patient;
+  hideNames: boolean;
   onClose: () => void;
 };
 
-export default function PatientDetail({ patient, onClose }: PatientDetailProps) {
+export default function PatientDetail({
+  patient,
+  hideNames,
+  onClose,
+}: PatientDetailProps) {
+  const displayName = hideNames ? toInitials(patient.name) : patient.name;
   // WCAG dialog pattern — focus the close (Back) button on open. PatientCensus
   // restores the originating row's focus on close.
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -46,7 +52,7 @@ export default function PatientDetail({ patient, onClose }: PatientDetailProps) 
     <aside
       data-testid="detail-panel"
       role="region"
-      aria-label={`Details for ${patient.name}`}
+      aria-label={`Details for ${displayName}`}
       tabIndex={-1}
       className="absolute inset-0 z-20 flex flex-col bg-slate-50 shadow-2xl"
     >
@@ -76,7 +82,7 @@ export default function PatientDetail({ patient, onClose }: PatientDetailProps) 
         <div className="flex items-start justify-between pr-2">
           <div>
             <h2 className="mb-3 font-['Archivo'] text-3xl font-black leading-none tracking-tight text-slate-900">
-              {patient.name}, {patient.age}
+              {displayName}
             </h2>
             <div className="mb-1 flex items-baseline font-['Archivo'] text-sm font-bold uppercase tracking-widest text-slate-600">
               <span className="ml-1">Room {formatRoom(patient.room)}</span>
