@@ -41,7 +41,7 @@ src/
 
 - `PatientCensus` derives the visible list in render from `(PATIENTS, searchQuery, sort)` rather than storing filtered/sorted rows in state — single source of truth, no effect-sync.
 - Sort state is `{ key, dir }` as one cohesive value so toggle transitions stay atomic.
-- Row accent (left border) on the first `<td>` pairs with `StatusBadge` for redundant encoding — color alone would be a WCAG fail.
+- Row accent (4px inset `box-shadow` on the first `<td>`) pairs with `StatusBadge` for redundant encoding — color alone would be a WCAG fail. Using a shadow instead of `border-l-4` so the body cells stay aligned with the no-border thead.
 - Detail panel follows the WCAG dialog pattern: focus the close button on open, restore focus to the originating row on close.
 - Rows are focusable `<tr>` + `onKeyDown`, not `role="button"` — applying button semantics to a `<tr>` overrides the table role and collapses the cell-by-cell screen-reader read into one button label. The ARIA grid pattern is the fuller answer; see "With more time."
 
@@ -55,7 +55,7 @@ _This section was written after the timer; some code edits were also made post-t
 
 1. **Typed comparator map for sort — finish what status started.** `STATUS_RANK` now drives the status sort numerically — `Discharged` could land anywhere alphabetically and triage rank stays correct. Three more columns sit on the same `localeCompare` default and want the same treatment: Patient (currently sorts by first name because the stored value is "First Last", but clinical convention is last-name first), Age (string compare breaks at 100+), and Room (alphanumeric wants natural-order). One per-key `comparators[key]` lookup replaces the default in [compareBy](src/components/PatientCensus.tsx). *First because it's correctness, not polish.*
 
-2. **ARIA grid pattern on the roster — roving tabindex + arrow keys.** Charge nurses drive this view keyboard-heavy across a full shift. Today every row is its own tab stop (Enter / Space opens), so traversing the table is N tab stops. Grid pattern collapses that to one tab stop with arrows moving between rows. *Second because it's working today — but the user the tool exists for is the one for whom "working" is the lowest bar.* — [PatientCensus.tsx:181-197](src/components/PatientCensus.tsx#L181-L197)
+2. **ARIA grid pattern on the roster — roving tabindex + arrow keys.** Charge nurses drive this view keyboard-heavy across a full shift. Today every row is its own tab stop (Enter / Space opens), so traversing the table is N tab stops. Grid pattern collapses that to one tab stop with arrows moving between rows. *Second because it's working today — but the user the tool exists for is the one for whom "working" is the lowest bar.* — row implementation at [PatientCensus.tsx](src/components/PatientCensus.tsx) `tbody` map.
 
 ### Backlog (polish, not load-bearing)
 
