@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import StatusBadge from "./StatusBadge";
 import PatientDetail from "./PatientDetail";
+import { formatRoom, toInitials } from "./format";
 
 // Numeric triage rank — replaces the lexical localeCompare on `status`. Today's
 // String(...).localeCompare(...) happens to sort Critical / Needs Attention / Stable
@@ -34,27 +35,6 @@ const ROW_ACCENT: Record<Patient["status"], string> = {
   Critical: "border-l-4 border-l-rose-500",
   "Needs Attention": "border-l-4 border-l-amber-500",
   Stable: "border-l-4 border-l-transparent",
-};
-
-const toInitials = (name: string) =>
-  name
-    .split(/\s+/)
-    .filter(Boolean)
-    .map((part) => part[0]!.toUpperCase())
-    .join("");
-
-// "101A" → bold "101" + lighter "A". Room number is the scan target; the wing
-// letter is supporting detail.
-const formatRoom = (room: string) => {
-  const match = room.match(/^(\d+)([A-Za-z]*)$/);
-  if (!match) return <>{room}</>;
-  const [, digits, suffix] = match;
-  return (
-    <>
-      <span className="font-black">{digits}</span>
-      {suffix && <span className="ml-0.5 font-normal">{suffix}</span>}
-    </>
-  );
 };
 
 export default function PatientCensus() {
@@ -122,17 +102,6 @@ export default function PatientCensus() {
     );
   };
 
-  // Master-detail swap preserved here. The side-by-side layout is the next commit;
-  // separating the two keeps this diff focused on the roster shell + row styling.
-  if (selectedPatient) {
-    return (
-      <PatientDetail
-        patient={selectedPatient}
-        onClose={() => setSelectedPatient(null)}
-      />
-    );
-  }
-
   const thBase =
     "border-b-2 border-slate-200 bg-white px-4 py-3 text-left font-['Archivo'] text-base font-bold text-slate-700";
   const sortButton =
@@ -194,7 +163,8 @@ export default function PatientCensus() {
         </button>
       </header>
 
-      <main className="flex-1 overflow-auto">
+      <main className="relative flex flex-1 overflow-hidden">
+        <div className="flex-1 overflow-auto">
         {/* table-fixed + colgroup locks column widths so filtered or empty
             results don't reflow the layout. Diagnosis is the only flexible
             column — it absorbs leftover width. */}
@@ -304,6 +274,14 @@ export default function PatientCensus() {
           >
             No patients match your search.
           </div>
+        )}
+        </div>
+
+        {selectedPatient && (
+          <PatientDetail
+            patient={selectedPatient}
+            onClose={() => setSelectedPatient(null)}
+          />
         )}
       </main>
     </>
