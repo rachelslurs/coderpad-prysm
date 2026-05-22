@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { Patient } from "../../data/patients.ts";
-import { ArrowLeft, Stethoscope, Clock } from "lucide-react";
+import { ArrowLeft, HandHeart, Stethoscope, Clock, Calendar, ShieldCheck } from "lucide-react";
 import StatusBadge from "./StatusBadge";
 import { formatRoom, toInitials, calculateLOS } from "./format";
 
@@ -36,17 +36,10 @@ export default function PatientDetail({
 
   const los = calculateLOS(patient.admittedOn);
 
-  // Diagnosis card border tints rose on Critical so the chart-review tile
-  // carries the urgency cue without re-spelling it.
-  const diagnosisCardBorder =
-    patient.status === "Critical"
-      ? "border-rose-300 bg-rose-50/10"
-      : "border-slate-200";
-
   const tierLabel =
-    "mb-3 font-['Archivo'] text-xs font-bold uppercase tracking-widest text-teal-700/70";
-  const fieldLabel = "text-xs font-semibold text-slate-500";
-  const fieldValue = "text-lg font-bold text-slate-900";
+    "mb-3 font-['Archivo'] text-sm font-bold uppercase tracking-widest text-teal-700/70";
+  const fieldLabel = "text-sm font-semibold text-slate-500";
+  const fieldValue = "text-xl font-bold text-slate-900";
 
   return (
     <aside
@@ -66,14 +59,14 @@ export default function PatientDetail({
             data-testid="close-button"
             onClick={onClose}
             aria-label="Back to roster"
-            className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm font-bold text-slate-500 transition-colors hover:bg-teal-50 hover:text-teal-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
+            className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-base font-bold text-slate-500 transition-colors hover:bg-teal-50 hover:text-teal-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
           >
             <ArrowLeft aria-hidden="true" className="h-4 w-4" />
             <span>Back</span>
           </button>
           <span
             aria-hidden="true"
-            className="hidden select-none rounded border border-slate-200 bg-slate-100/80 px-2 py-0.5 text-[10px] font-bold tracking-widest text-slate-400 sm:inline-block"
+            className="hidden select-none rounded border border-slate-200 bg-slate-100/80 px-2 py-0.5 text-xs font-bold tracking-widest text-slate-400 sm:inline-block"
           >
             ESC
           </span>
@@ -81,10 +74,10 @@ export default function PatientDetail({
 
         <div className="flex items-start justify-between pr-2">
           <div>
-            <h2 className="mb-3 font-['Archivo'] text-3xl font-black leading-none tracking-tight text-slate-900">
+            <h2 className="mb-3 font-['Archivo'] text-4xl font-black leading-none tracking-tight text-slate-900">
               {displayName}
             </h2>
-            <div className="mb-1 flex items-baseline font-['Archivo'] text-sm font-bold uppercase tracking-widest text-slate-600">
+            <div className="mb-1 flex items-baseline font-['Archivo'] text-base font-bold uppercase tracking-widest text-slate-600">
               <span className="ml-1">Room {formatRoom(patient.room)}</span>
             </div>
           </div>
@@ -99,18 +92,20 @@ export default function PatientDetail({
         <section>
           <h3 className={tierLabel}>Clinical Focus</h3>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <div
-              className={`rounded-md border bg-white p-4 shadow-sm md:col-span-2 ${diagnosisCardBorder}`}
-            >
-              <div className={`mb-1 ${fieldLabel}`}>Primary Diagnosis</div>
-              <div className={fieldValue}>{patient.diagnosis}</div>
+            <div className="flex items-center gap-3 rounded-md border border-slate-200 bg-white p-4 shadow-sm md:col-span-2">
+              <div className="rounded bg-teal-50 p-2 text-teal-600">
+                <HandHeart aria-hidden="true" className="h-4 w-4" />
+              </div>
+              <div>
+                <div className={fieldLabel}>Primary Diagnosis</div>
+                <div className="text-3xl font-black text-slate-900">
+                  {patient.diagnosis}
+                </div>
+              </div>
             </div>
             <div className="flex flex-col items-center justify-center rounded-md border border-slate-200 bg-white p-4 text-center shadow-sm">
-              <div className="font-['Archivo'] text-2xl font-black text-slate-900">
+              <div className="text-3xl font-black text-slate-900">
                 Day {los.days}
-              </div>
-              <div className="mt-1 text-xs font-medium text-slate-500">
-                Admitted: {los.dateStr}
               </div>
             </div>
           </div>
@@ -138,14 +133,29 @@ export default function PatientDetail({
                 <div className={fieldValue}>{patient.age} years old</div>
               </div>
             </div>
+            <div className="flex items-center gap-3 p-4">
+              <div className="rounded bg-teal-50 p-2 text-teal-600">
+                <Calendar aria-hidden="true" className="h-4 w-4" />
+              </div>
+              <div>
+                <div className={fieldLabel}>Admitted</div>
+                <div className={fieldValue}>{los.dateStr}</div>
+              </div>
+            </div>
           </div>
         </section>
 
         {/* TIER 3 — Admin. Billing context, demoted visually. */}
         <section>
-          <div className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
-            <div className={`mb-1 ${fieldLabel}`}>Primary Insurance</div>
-            <div className={fieldValue}>{patient.insurance}</div>
+          <h3 className={tierLabel}>Admin</h3>
+          <div className="flex items-center gap-3 rounded-md border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="rounded bg-teal-50 p-2 text-teal-600">
+              <ShieldCheck aria-hidden="true" className="h-4 w-4" />
+            </div>
+            <div>
+              <div className={fieldLabel}>Primary Insurance</div>
+              <div className={fieldValue}>{patient.insurance}</div>
+            </div>
           </div>
         </section>
       </div>
