@@ -1,36 +1,35 @@
 import type { Patient } from "../../data/patients";
+import { AlertOctagon, AlertTriangle, CheckCircle, type LucideIcon } from "lucide-react";
 
-// Base pill + decorative dot via ::before (no extra DOM, implicitly hidden
-// from the a11y tree — text still carries the meaning for SRs).
+// Three-tier triage encoding. Each variant exposes `group-hover:*` hooks so a
+// parent `group` (the table row) can deepen the badge on row hover — wired up
+// in the roster commit. Redundant encoding (color + icon + text label) passes
+// WCAG "don't rely on color alone."
 const BASE =
-  "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs " +
-  "before:content-[''] before:inline-block before:rounded-full";
+  "inline-flex items-center gap-1.5 rounded border px-2.5 py-1 text-sm font-medium transition-all";
 
-// THINKING: For at-a-glance triage, asymmetric prominence > equal-weight
-// badges. Critical pops (solid red + uppercase + larger pulsing dot),
-// Stable recedes (low-chroma gray) so deviations are what catch the eye.
-// Height stays constant across all three so table rows don't jitter.
-// Cues stacked per status:
-//   Stable          → color + small dot
-//   Needs Attention → color + dot + ring + weight
-//   Critical        → color + larger dot + weight + casing + tracking + motion
-// Multiple cues = passes WCAG "don't rely on color alone" cleanly.
 const STATUS_VARIANT: Record<Patient["status"], string> = {
-  // Quiet — gray on gray. Recedes by design.
-  "Stable":
-    "font-medium bg-zinc-100 text-zinc-600 " +
-    "before:w-1.5 before:h-1.5 before:bg-zinc-400",
-
-  // Medium — amber on amber, ring for definition, semibold for weight.
+  Critical:
+    "border-rose-200 bg-rose-50 text-rose-700 " +
+    "group-hover:border-rose-400 group-hover:bg-rose-100 group-hover:ring-1 group-hover:ring-rose-400",
   "Needs Attention":
-    "font-semibold bg-amber-100 text-amber-900 ring-1 ring-inset ring-amber-600/30 " +
-    "before:w-1.5 before:h-1.5 before:bg-amber-600",
+    "border-amber-300 bg-amber-50 text-amber-900 " +
+    "group-hover:border-amber-400 group-hover:bg-amber-100 group-hover:ring-1 group-hover:ring-amber-400",
+  Stable:
+    "border-slate-300 bg-slate-50 text-slate-700 " +
+    "group-hover:border-slate-400 group-hover:bg-slate-100 group-hover:ring-1 group-hover:ring-slate-400",
+};
 
-  // Loud — solid red, white text, uppercase + tracking, larger dot with a
-  // motion-safe pulse. White on red-600 ≈ 4.83:1 (passes WCAG AA).
-  "Critical":
-    "font-bold uppercase tracking-wide bg-red-600 text-white shadow-sm " +
-    "before:w-2 before:h-2 before:bg-white motion-safe:before:animate-pulse",
+const STATUS_ICON: Record<Patient["status"], LucideIcon> = {
+  Critical: AlertOctagon,
+  "Needs Attention": AlertTriangle,
+  Stable: CheckCircle,
+};
+
+const ICON_TINT: Record<Patient["status"], string> = {
+  Critical: "text-rose-600",
+  "Needs Attention": "text-amber-600",
+  Stable: "text-slate-500",
 };
 
 type StatusBadgeProps = {
@@ -38,5 +37,11 @@ type StatusBadgeProps = {
 };
 
 export default function StatusBadge({ status }: StatusBadgeProps) {
-  return <span className={`${BASE} ${STATUS_VARIANT[status]}`}>{status}</span>;
+  const Icon = STATUS_ICON[status];
+  return (
+    <div className={`${BASE} ${STATUS_VARIANT[status]}`}>
+      <Icon className={`h-3.5 w-3.5 ${ICON_TINT[status]}`} aria-hidden="true" />
+      <span>{status}</span>
+    </div>
+  );
 }
