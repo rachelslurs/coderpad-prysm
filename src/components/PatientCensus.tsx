@@ -1,13 +1,37 @@
 import { useState, useEffect, useRef } from "react";
 import { PATIENTS, type Patient } from "../../data/patients.ts";
+import {
+  Search,
+  X,
+  Eye,
+  EyeOff,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+} from "lucide-react";
 import StatusBadge from "./StatusBadge";
 import PatientDetail from "./PatientDetail";
 
-// Triage accent applied to the first <td>. Color alone is a WCAG fail —
-// pairs with the status column (becomes a badge in Step 3) for redundant encoding.
-// Lives on the first cell because <tr> borders don't paint reliably under border-collapse.
+// Numeric triage rank — replaces the lexical localeCompare on `status`. Today's
+// String(...).localeCompare(...) happens to sort Critical / Needs Attention / Stable
+// in the right order by alphabet, but adds-a-future-status (e.g. "Discharged") drift
+// silently. Rank encodes the actual clinical ordering.
+const STATUS_RANK: Record<Patient["status"], number> = {
+  Critical: 1,
+  "Needs Attention": 2,
+  Stable: 3,
+};
+
+const compareBy = (key: keyof Patient, a: Patient, b: Patient) => {
+  if (key === "status") return STATUS_RANK[a.status] - STATUS_RANK[b.status];
+  return String(a[key]).localeCompare(String(b[key]));
+};
+
+// First-cell left edge carries the status accent, paired with the badge for
+// redundant encoding. Selection swaps it to solid teal in the same slot so the
+// indicator location is stable.
 const ROW_ACCENT: Record<Patient["status"], string> = {
-  Critical: "border-l-4 border-l-red-500",
+  Critical: "border-l-4 border-l-rose-500",
   "Needs Attention": "border-l-4 border-l-amber-500",
   Stable: "border-l-4 border-l-transparent",
 };
@@ -19,35 +43,37 @@ const toInitials = (name: string) =>
     .map((part) => part[0]!.toUpperCase())
     .join("");
 
+// "101A" → bold "101" + lighter "A". Room number is the scan target; the wing
+// letter is supporting detail.
+const formatRoom = (room: string) => {
+  const match = room.match(/^(\d+)([A-Za-z]*)$/);
+  if (!match) return <>{room}</>;
+  const [, digits, suffix] = match;
+  return (
+    <>
+      <span className="font-black">{digits}</span>
+      {suffix && <span className="ml-0.5 font-normal">{suffix}</span>}
+    </>
+  );
+};
+
 export default function PatientCensus() {
   const [searchQuery, setSearchQuery] = useState("");
-  // { key, dir } as one cohesive value so toggle transitions stay atomic —
-  // never catch a render where dir flipped but key didn't.
-  const [sort, setSort] = useState<{ key: keyof Patient; dir: "asc" | "desc" }>({
-    key: "room",
-    dir: "asc",
-  });
+  const [sort, setSort] = useState<{ key: keyof Patient; dir: "asc" | "desc" }>(
+    { key: "room", dir: "asc" }
+  );
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [hideNames, setHideNames] = useState(false);
 
-  // Restore focus to the originating row on close so keyboard users don't lose
-  // their place. The close-button-on-open side lives in PatientDetail.
   const lastFocusedRowRef = useRef<HTMLTableRowElement | null>(null);
 
-  // STEP 2 — shallow bug was the empty deps array, but adding [searchQuery]
-  // would only hide the real issue: `filtered` was derived state. The effect
-  // forked the source of truth and raced handleSort, which also setPatients.
-  // Going with: drop the effect + `patients` state, derive in render from
-  // (PATIENTS, searchQuery, sortField). Spread before .sort() since it mutates.
   const visiblePatients = [...PATIENTS]
     .filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()))
     .sort((a, b) => {
-      const cmp = String(a[sort.key]).localeCompare(String(b[sort.key]));
+      const cmp = compareBy(sort.key, a, b);
       return sort.dir === "asc" ? cmp : -cmp;
     });
 
-  // Row-focus restoration runs after the detail panel unmounts. Driven by an
-  // effect (not the click handler) so it fires after the DOM swap.
   useEffect(() => {
     if (!selectedPatient && lastFocusedRowRef.current) {
       lastFocusedRowRef.current.focus();
@@ -63,7 +89,6 @@ export default function PatientCensus() {
     setSelectedPatient(patient);
   };
 
-  // Same-key flips direction; new key resets to asc.
   const handleSort = (key: keyof Patient) => {
     setSort((prev) =>
       prev.key === key
@@ -73,21 +98,32 @@ export default function PatientCensus() {
   };
 
   const ariaSortFor = (key: keyof Patient) =>
-    sort.key === key ? (sort.dir === "asc" ? "ascending" : "descending") : "none";
+    sort.key === key
+      ? sort.dir === "asc"
+        ? "ascending"
+        : "descending"
+      : "none";
 
-  // Reserved-width slot so column widths don't shift when the arrow toggles in/out.
-  const sortIndicator = (key: keyof Patient) => (
-    <span aria-hidden="true" className="inline-block w-3 text-xs text-zinc-400">
-      {sort.key === key ? (sort.dir === "asc" ? "▲" : "▼") : ""}
-    </span>
-  );
+  const SortIcon = ({ columnKey }: { columnKey: keyof Patient }) => {
+    if (sort.key !== columnKey) {
+      return (
+        <ArrowUpDown
+          aria-hidden="true"
+          className="ml-1 inline-block h-3 w-3 text-slate-400"
+        />
+      );
+    }
+    const Arrow = sort.dir === "asc" ? ArrowUp : ArrowDown;
+    return (
+      <Arrow
+        aria-hidden="true"
+        className="ml-1 inline-block h-3 w-3 text-teal-600"
+      />
+    );
+  };
 
-  // THINKING: Going master-detail swap over overlay/drawer. The tests use
-  // getByText for diagnosis/physician — those strings also live in the row, so
-  // keeping both visible would duplicate the accessible text. Beyond the test:
-  // clinically, a focused single-patient view is the right frame for chart review;
-  // the roster is the navigation context, not the working surface. With more time
-  // would explore split-pane that physically separates the two regions.
+  // Master-detail swap preserved here. The side-by-side layout is the next commit;
+  // separating the two keeps this diff focused on the roster shell + row styling.
   if (selectedPatient) {
     return (
       <PatientDetail
@@ -97,144 +133,168 @@ export default function PatientCensus() {
     );
   }
 
+  const thBase =
+    "border-b-2 border-slate-200 bg-white px-4 py-3 text-left font-['Archivo'] text-base font-bold text-slate-700";
+  const sortButton =
+    "inline-flex items-center gap-1 rounded transition-colors hover:text-teal-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500";
+
   return (
-    <section className="w-full max-w-5xl overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
-      <header className="flex flex-col gap-3 border-b border-zinc-200 p-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-900">Patient Census</h1>
-          <p className="text-sm text-zinc-500">
-            Unit <strong className="font-semibold text-zinc-900">1 North</strong> · {visiblePatients.length} patients
-          </p>
-        </div>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-          <label className="inline-flex items-center gap-2 text-sm text-zinc-700">
-            <input
-              type="checkbox"
-              className="h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900/20"
-              checked={hideNames}
-              onChange={(e) => setHideNames(e.target.checked)}
+    <>
+      <header className="flex h-16 flex-none items-center justify-between border-b border-slate-800 bg-slate-900 px-6 shadow-md">
+        <div className="flex items-center gap-6">
+          <h1 className="font-['Archivo'] text-2xl font-black tracking-tight text-white">
+            1 North{" "}
+            <span className="ml-2 rounded bg-teal-500/10 px-2 py-0.5 text-base font-medium text-teal-400">
+              Census
+            </span>
+          </h1>
+
+          <div className="relative">
+            <Search
+              aria-hidden="true"
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-teal-500/70"
             />
-            Hide patient name
-          </label>
-          <input
-            type="text"
-            aria-label="Search by patient name"
-            className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 sm:w-72"
-            placeholder="Search by name..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+            <input
+              type="text"
+              aria-label="Search by patient name"
+              placeholder="Find patient..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-64 rounded border border-slate-700 bg-slate-800 py-1.5 pl-9 pr-8 text-sm text-slate-100 placeholder:text-slate-400 focus:bg-slate-950 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                aria-label="Clear search"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded text-slate-400 hover:text-slate-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
         </div>
+
+        <button
+          type="button"
+          onClick={() => setHideNames(!hideNames)}
+          aria-pressed={hideNames}
+          className={`inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 ${
+            hideNames
+              ? "bg-teal-500 text-white hover:bg-teal-400"
+              : "border border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700"
+          }`}
+        >
+          {hideNames ? (
+            <EyeOff aria-hidden="true" className="h-4 w-4" />
+          ) : (
+            <Eye aria-hidden="true" className="h-4 w-4" />
+          )}
+          {hideNames ? "Privacy on" : "Privacy off"}
+        </button>
       </header>
 
-      <table className="w-full border-collapse text-sm text-zinc-900">
-        <thead className="border-b border-zinc-200 bg-zinc-50">
-          <tr>
-            <th
-              scope="col"
-              aria-sort={ariaSortFor("room")}
-              className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-zinc-500"
-            >
-              <button
-                type="button"
-                onClick={() => handleSort("room")}
-                className="-mx-1 inline-flex items-center gap-1 rounded px-1 py-0.5 hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+      <main className="flex-1 overflow-auto">
+        <table className="w-full border-collapse text-sm text-slate-900">
+          <thead className="sticky top-0 z-10">
+            <tr>
+              <th scope="col" aria-sort={ariaSortFor("room")} className={thBase}>
+                <button
+                  type="button"
+                  onClick={() => handleSort("room")}
+                  className={sortButton}
+                >
+                  <span>Room</span>
+                  <SortIcon columnKey="room" />
+                </button>
+              </th>
+              <th
+                scope="col"
+                aria-sort={ariaSortFor("name")}
+                className={`${thBase} min-w-44`}
               >
-                <span>Room</span>
-                {sortIndicator("room")}
-              </button>
-            </th>
-            <th
-              scope="col"
-              aria-sort={ariaSortFor("name")}
-              className="min-w-[11rem] px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-zinc-500"
-            >
-              <button
-                type="button"
-                onClick={() => handleSort("name")}
-                className="-mx-1 inline-flex items-center gap-1 rounded px-1 py-0.5 hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                <button
+                  type="button"
+                  onClick={() => handleSort("name")}
+                  className={sortButton}
+                >
+                  <span>Patient</span>
+                  <SortIcon columnKey="name" />
+                </button>
+              </th>
+              <th scope="col" className={thBase}>
+                Age
+              </th>
+              <th scope="col" className={thBase}>
+                Physician
+              </th>
+              <th scope="col" className={thBase}>
+                Diagnosis
+              </th>
+              <th
+                scope="col"
+                aria-sort={ariaSortFor("status")}
+                className={thBase}
               >
-                <span>Patient</span>
-                {sortIndicator("name")}
-              </button>
-            </th>
-            <th scope="col" className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-zinc-500">Age</th>
-            <th scope="col" className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-zinc-500">Physician</th>
-            <th scope="col" className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-zinc-500">Diagnosis</th>
-            <th
-              scope="col"
-              aria-sort={ariaSortFor("status")}
-              className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-zinc-500"
-            >
-              <button
-                type="button"
-                onClick={() => handleSort("status")}
-                className="-mx-1 inline-flex items-center gap-1 rounded px-1 py-0.5 hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-              >
-                <span>Status</span>
-                {sortIndicator("status")}
-              </button>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {visiblePatients.map((patient) => (
-            <tr
-              key={patient.id}
-              // Each row is a tab stop so keyboard users can reach + activate it.
-              // Space is preventDefault'd to stop page-scroll (default for focusable
-              // non-button elements). Grid pattern w/ roving tabindex would be better
-              // once row counts grow — see "with more time" below.
-              tabIndex={0}
-              className="cursor-pointer border-b border-zinc-100 transition-colors hover:bg-zinc-50 focus:outline-none focus-visible:bg-zinc-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue-600"
-              onClick={(e) => openPanel(patient, e)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  openPanel(patient, e);
-                }
-              }}
-            >
-              <td className={`px-3 py-3 align-middle font-mono text-xs text-zinc-600 ${ROW_ACCENT[patient.status]}`}>
-                {patient.room}
-              </td>
-              <td className="px-3 py-3 align-middle font-medium text-zinc-900">
-                {hideNames ? toInitials(patient.name) : patient.name}
-              </td>
-              <td className="px-3 py-3 align-middle tabular-nums text-zinc-700">{patient.age}</td>
-              <td className="px-3 py-3 align-middle text-zinc-600">{patient.physician}</td>
-              <td className="px-3 py-3 align-middle text-zinc-600">{patient.diagnosis}</td>
-              <td className="px-3 py-3 align-middle">
-                <StatusBadge status={patient.status} />
-              </td>
+                <button
+                  type="button"
+                  onClick={() => handleSort("status")}
+                  className={sortButton}
+                >
+                  <span>Status</span>
+                  <SortIcon columnKey="status" />
+                </button>
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-slate-100 bg-white">
+            {visiblePatients.map((patient) => (
+              <tr
+                key={patient.id}
+                tabIndex={0}
+                className="group cursor-pointer transition-colors hover:bg-slate-50 focus:outline-none focus-visible:bg-slate-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-teal-600"
+                onClick={(e) => openPanel(patient, e)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    openPanel(patient, e);
+                  }
+                }}
+              >
+                <td
+                  className={`px-4 py-3.5 align-middle font-['Archivo'] text-sm text-slate-600 ${ROW_ACCENT[patient.status]}`}
+                >
+                  {formatRoom(patient.room)}
+                </td>
+                <td className="px-4 py-3.5 align-middle font-['Archivo'] text-lg font-black text-slate-900">
+                  {hideNames ? toInitials(patient.name) : patient.name}
+                </td>
+                <td className="px-4 py-3.5 align-middle tabular-nums text-slate-700">
+                  {patient.age}
+                </td>
+                <td className="px-4 py-3.5 align-middle text-slate-600">
+                  {patient.physician}
+                </td>
+                <td className="px-4 py-3.5 align-middle text-slate-600">
+                  {patient.diagnosis}
+                </td>
+                <td className="px-4 py-3.5 align-middle">
+                  <StatusBadge status={patient.status} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
 
-    </section>
+        {visiblePatients.length === 0 && (
+          <div
+            role="status"
+            className="px-4 py-12 text-center text-sm text-slate-500"
+          >
+            No patients match your search.
+          </div>
+        )}
+      </main>
+    </>
   );
 }
-
-// With more time:
-// - Status needs a semantic comparator, not a lexical one. Today's
-//   String(...).localeCompare(...) lands Critical / Needs Attention / Stable in triage
-//   rank by alphabet coincidence — add "Discharged" and it sorts between Critical and
-//   Needs Attention, which is clinically wrong. Right shape is a
-//   STATUS_RANK: Record<Patient["status"], number> driving a numeric compare, and
-//   defaulting the page to status-desc so the charge nurse lands on Critical first.
-//   (Holding the default-sort change off today because it's opinionated and the
-//   fixture's room-asc happens to be the natural eye-path.)
-// - Per-column comparator map more broadly: age sorts as string today (fine at 2 digits,
-//   breaks at 100+); room is alphanumeric and would want natural-order; admittedOn would
-//   want Date compare. One comparators[key] lookup replaces the localeCompare default.
-// - Dedicated search input with clear button.
-// - Sticky thead once the row count justifies it.
-// - Map the <th> columns from a config array to kill the header duplication
-//   if the column set grows.
-// - ARIA grid pattern with roving tabindex + arrow-key row navigation. Today
-//   every row is a tab stop (Enter / Space opens the panel); with N rows that's
-//   N tab stops to cross the table. Grid pattern collapses to one tab stop with
-//   arrow keys to move between rows.
-// - Focus trap inside the detail panel (Tab cycles within it). Skipping under
-//   timer; with one focusable element in the panel it's a non-issue today.
