@@ -233,7 +233,10 @@ export default function PatientCensus() {
               <tr
                 key={patient.id}
                 tabIndex={0}
-                className="group cursor-pointer transition-colors hover:bg-slate-50 focus:outline-none focus-visible:bg-slate-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-teal-600"
+                // transition-[background-color] (not transition-colors) so the
+                // divide-y border between rows doesn't animate when sort
+                // reorders the DOM — border-color is part of transition-colors.
+                className="group cursor-pointer transition-[background-color] hover:bg-slate-50 focus:outline-none focus-visible:bg-slate-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-teal-600"
                 onClick={(e) => openPanel(patient, e)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
