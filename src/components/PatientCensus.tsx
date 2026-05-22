@@ -60,16 +60,17 @@ export default function PatientCensus() {
   const [hideNames, setHideNames] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   // Roving-tabindex active row. Only one <tr> at a time has tabIndex={0}; all
-  // others are tabIndex={-1}. Tab into the table lands on the active row and
-  // arrow keys move within without consuming additional tab stops.
+  // others are tabIndex={-1}. Tab into the table lands on the active row,
+  // arrow keys then move within the table without consuming additional tab
+  // stops.
   const [activeRowIndex, setActiveRowIndex] = useState(0);
 
   const lastFocusedRowRef = useRef<HTMLTableRowElement | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const rowRefs = useRef<Array<HTMLTableRowElement | null>>([]);
   // Set when arrow keys / Home / End change activeRowIndex — the effect below
-  // moves focus on the next render. Click- and Tab-driven focus changes sync
-  // activeRowIndex via onFocus instead, without setting this flag.
+  // will move focus on the next render. Click- and Tab-driven focus changes
+  // sync activeRowIndex via onFocus instead, without setting this flag.
   const shouldFocusActiveRow = useRef(false);
 
   // "/" anywhere focuses the search input — common pattern (GitHub, Slack,
@@ -108,8 +109,8 @@ export default function PatientCensus() {
     }
   }, [selectedPatient]);
 
-  // Filter shrinks below the current active index — clamp back into range so
-  // a focusable row still exists.
+  // When the filter shrinks the visible set below the current active index,
+  // pull the active index back into range so a focusable row still exists.
   useEffect(() => {
     if (
       visiblePatients.length > 0 &&
@@ -119,6 +120,10 @@ export default function PatientCensus() {
     }
   }, [visiblePatients.length, activeRowIndex]);
 
+  // Arrow keys set shouldFocusActiveRow — after the render commits the new
+  // tabIndex assignments, we move focus to the new active row. Click/tab-
+  // driven focus changes don't set the flag; their onFocus handlers sync
+  // activeRowIndex without calling focus().
   useLayoutEffect(() => {
     if (shouldFocusActiveRow.current) {
       rowRefs.current[activeRowIndex]?.focus();
@@ -127,7 +132,10 @@ export default function PatientCensus() {
   }, [activeRowIndex]);
 
   const moveActiveRow = (target: number) => {
-    const clamped = Math.max(0, Math.min(target, visiblePatients.length - 1));
+    const clamped = Math.max(
+      0,
+      Math.min(target, visiblePatients.length - 1)
+    );
     if (clamped !== activeRowIndex) {
       shouldFocusActiveRow.current = true;
       setActiveRowIndex(clamped);
@@ -178,7 +186,7 @@ export default function PatientCensus() {
   };
 
   const thBase =
-    "bg-white px-6 py-5 text-left font-['Archivo'] text-lg font-bold whitespace-nowrap transition-colors";
+    "bg-white px-6 py-4 text-left font-['Archivo'] text-lg font-bold whitespace-nowrap transition-colors";
   const thInactive = `${thBase} border-b-2 border-slate-200 text-slate-700`;
   // Sortable headers carry click+keyboard handlers on the <th> itself so the
   // entire cell is the hit target. Active-sort gets teal text/bg/border —
@@ -206,7 +214,7 @@ export default function PatientCensus() {
 
   return (
     <>
-      <header className="grid flex-none grid-cols-2 items-center border-b border-slate-800 bg-slate-900 px-6 py-5 shadow-md md:grid-cols-3">
+      <header className="grid flex-none grid-cols-[1fr_auto] items-center gap-4 border-b border-slate-800 bg-slate-900 px-6 py-4 shadow-md md:grid-cols-3">
         <h1 className="hidden items-baseline gap-2 whitespace-nowrap font-['Archivo'] text-xl font-black tracking-tight text-white md:inline-flex">
           <span>1 North</span>
           <span className="text-lg font-medium text-slate-400">Census</span>
@@ -262,7 +270,8 @@ export default function PatientCensus() {
           type="button"
           onClick={() => setHideNames(!hideNames)}
           aria-pressed={hideNames}
-          className={`inline-flex items-center gap-2 justify-self-end whitespace-nowrap rounded border px-3 py-2 text-base font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 ${
+          aria-label={hideNames ? "Privacy on" : "Privacy off"}
+          className={`inline-flex min-h-[42px] items-center gap-2 justify-self-end whitespace-nowrap rounded border px-3 py-2 text-base font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 ${
             hideNames
               ? "border-teal-500 bg-teal-500 text-white hover:bg-teal-400"
               : "border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700"
@@ -273,7 +282,9 @@ export default function PatientCensus() {
           ) : (
             <Eye aria-hidden="true" className="h-4 w-4" />
           )}
-          {hideNames ? "Privacy on" : "Privacy off"}
+          <span className="hidden md:inline">
+            {hideNames ? "Privacy on" : "Privacy off"}
+          </span>
         </button>
       </header>
 
@@ -372,7 +383,7 @@ export default function PatientCensus() {
                 >
                   {formatRoom(patient.room)}
                 </td>
-                <td className="px-6 py-3.5 align-middle font-['Archivo'] text-xl font-black text-slate-900">
+                <td className="px-6 py-3.5 align-middle font-['Archivo'] text-xl font-black leading-tight text-slate-900">
                   {hideNames ? toInitials(patient.name) : patient.name}
                 </td>
                 <td className="px-6 py-3.5 align-middle tabular-nums text-slate-700">
