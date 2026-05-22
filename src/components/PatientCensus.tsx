@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { PATIENTS, type Patient } from "../../data/patients.ts";
 import {
   Search,
@@ -13,19 +13,32 @@ import StatusBadge from "./StatusBadge";
 import PatientDetail from "./PatientDetail";
 import { formatRoom, toInitials } from "./format";
 
-// Numeric triage rank — replaces the lexical localeCompare on `status`. Today's
-// String(...).localeCompare(...) happens to sort Critical / Needs Attention / Stable
-// in the right order by alphabet, but adds-a-future-status (e.g. "Discharged") drift
-// silently. Rank encodes the actual clinical ordering.
+// Numeric triage rank — `Discharged` could land anywhere alphabetically and
+// triage order stays correct.
 const STATUS_RANK: Record<Patient["status"], number> = {
   Critical: 1,
   "Needs Attention": 2,
   Stable: 3,
 };
 
+// Per-column comparator. Each override matches the column's real ordering:
+// status by triage rank, age numerically, room with natural-order so "9" <
+// "10" and "101A" < "101B" both hold. Patient (name) is intentionally not
+// overridden — the display reads "First Last" so the sort needs to match;
+// fixing it correctly means flipping the display to "Last, First" as a paired
+// change, which we haven't done yet. Other keys fall back to a stringified
+// localeCompare.
+const COMPARATORS: Partial<
+  Record<keyof Patient, (a: Patient, b: Patient) => number>
+> = {
+  status: (a, b) => STATUS_RANK[a.status] - STATUS_RANK[b.status],
+  age: (a, b) => a.age - b.age,
+  room: (a, b) => a.room.localeCompare(b.room, undefined, { numeric: true }),
+};
+
 const compareBy = (key: keyof Patient, a: Patient, b: Patient) => {
-  if (key === "status") return STATUS_RANK[a.status] - STATUS_RANK[b.status];
-  return String(a[key]).localeCompare(String(b[key]));
+  const cmp = COMPARATORS[key];
+  return cmp ? cmp(a, b) : String(a[key]).localeCompare(String(b[key]));
 };
 
 // First-cell left edge carries the status accent, paired with the badge for
@@ -46,9 +59,18 @@ export default function PatientCensus() {
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [hideNames, setHideNames] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
+  // Roving-tabindex active row. Only one <tr> at a time has tabIndex={0}; all
+  // others are tabIndex={-1}. Tab into the table lands on the active row and
+  // arrow keys move within without consuming additional tab stops.
+  const [activeRowIndex, setActiveRowIndex] = useState(0);
 
   const lastFocusedRowRef = useRef<HTMLTableRowElement | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const rowRefs = useRef<Array<HTMLTableRowElement | null>>([]);
+  // Set when arrow keys / Home / End change activeRowIndex — the effect below
+  // moves focus on the next render. Click- and Tab-driven focus changes sync
+  // activeRowIndex via onFocus instead, without setting this flag.
+  const shouldFocusActiveRow = useRef(false);
 
   // "/" anywhere focuses the search input — common pattern (GitHub, Slack,
   // GitLab). Skip when the user is already typing into a field so a literal
@@ -85,6 +107,32 @@ export default function PatientCensus() {
       lastFocusedRowRef.current = null;
     }
   }, [selectedPatient]);
+
+  // Filter shrinks below the current active index — clamp back into range so
+  // a focusable row still exists.
+  useEffect(() => {
+    if (
+      visiblePatients.length > 0 &&
+      activeRowIndex >= visiblePatients.length
+    ) {
+      setActiveRowIndex(visiblePatients.length - 1);
+    }
+  }, [visiblePatients.length, activeRowIndex]);
+
+  useLayoutEffect(() => {
+    if (shouldFocusActiveRow.current) {
+      rowRefs.current[activeRowIndex]?.focus();
+      shouldFocusActiveRow.current = false;
+    }
+  }, [activeRowIndex]);
+
+  const moveActiveRow = (target: number) => {
+    const clamped = Math.max(0, Math.min(target, visiblePatients.length - 1));
+    if (clamped !== activeRowIndex) {
+      shouldFocusActiveRow.current = true;
+      setActiveRowIndex(clamped);
+    }
+  };
 
   const openPanel = (
     patient: Patient,
@@ -275,19 +323,47 @@ export default function PatientCensus() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 bg-white">
-            {visiblePatients.map((patient) => (
+            {visiblePatients.map((patient, i) => (
               <tr
                 key={patient.id}
-                tabIndex={0}
+                ref={(el) => {
+                  rowRefs.current[i] = el;
+                }}
+                tabIndex={activeRowIndex === i ? 0 : -1}
+                // Active row (roving tabindex target) gets a subtle slate-50
+                // tint so the user can see where Tab will land before tabbing.
+                // Hover (teal-50) wins over it when the mouse moves to a row.
                 // transition-[background-color] (not transition-colors) so the
                 // divide-y border between rows doesn't animate when sort
                 // reorders the DOM — border-color is part of transition-colors.
-                className="group cursor-pointer transition-[background-color] hover:bg-teal-50 focus:outline-none focus-visible:bg-teal-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-teal-600"
+                className={`group cursor-pointer transition-[background-color] hover:bg-teal-50 focus:outline-none focus-visible:bg-teal-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-teal-600 ${
+                  activeRowIndex === i ? "bg-slate-50" : ""
+                }`}
                 onClick={(e) => openPanel(patient, e)}
+                onFocus={() => setActiveRowIndex(i)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    openPanel(patient, e);
+                  switch (e.key) {
+                    case "Enter":
+                    case " ":
+                      e.preventDefault();
+                      openPanel(patient, e);
+                      break;
+                    case "ArrowDown":
+                      e.preventDefault();
+                      moveActiveRow(i + 1);
+                      break;
+                    case "ArrowUp":
+                      e.preventDefault();
+                      moveActiveRow(i - 1);
+                      break;
+                    case "Home":
+                      e.preventDefault();
+                      moveActiveRow(0);
+                      break;
+                    case "End":
+                      e.preventDefault();
+                      moveActiveRow(visiblePatients.length - 1);
+                      break;
                   }
                 }}
               >
