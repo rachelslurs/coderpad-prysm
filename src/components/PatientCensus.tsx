@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { PATIENTS, type Patient } from "../../data/patients.ts";
 import {
   Search,
@@ -94,12 +94,20 @@ export default function PatientCensus() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  const visiblePatients = [...PATIENTS]
-    .filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()))
-    .sort((a, b) => {
-      const cmp = compareBy(sort.key, a, b);
-      return sort.dir === "asc" ? cmp : -cmp;
-    });
+  // Memoized on (searchQuery, sort) — recomputes only when query or sort
+  // changes, not on every unrelated state tick (hideNames, arrow-key
+  // navigation, panel open/close). Also hoists the query .toLowerCase()
+  // out of the filter callback so it runs once per recompute, not once
+  // per patient.
+  const visiblePatients = useMemo(() => {
+    const needle = searchQuery.toLowerCase();
+    return [...PATIENTS]
+      .filter((p) => p.name.toLowerCase().includes(needle))
+      .sort((a, b) => {
+        const cmp = compareBy(sort.key, a, b);
+        return sort.dir === "asc" ? cmp : -cmp;
+      });
+  }, [searchQuery, sort]);
 
   useEffect(() => {
     if (!selectedPatient && lastFocusedRowRef.current) {
@@ -235,6 +243,11 @@ export default function PatientCensus() {
               aria-label="Search by patient name (shortcut: press / from anywhere)"
               placeholder="Find patient..."
               value={searchQuery}
+              // No debounce: filter is in-memory and now memoized, so per-
+              // keystroke cost is one filter+sort over PATIENTS.length. Add
+              // debounce (150-250ms) + AbortController the day this becomes a
+              // server query or PATIENTS grows past a few hundred — at that
+              // point cost shifts from compute to network thrash.
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => {
                 setSearchFocused(true);
@@ -337,7 +350,22 @@ export default function PatientCensus() {
               </th>
             </tr>
           </thead>
+          {/* No virtualization. table-fixed + colgroup locks layout so scroll
+              cost is just paint. At ~200+ rows, switch to row windowing
+              (TanStack Virtual) — that's also the moment to move from <table>
+              to role="grid" divs, since virtualizing a real <table> fights the
+              native sticky <thead> above, and grid divs pair naturally with
+              the full ARIA grid pattern in README "Next sprint". */}
           <tbody className="divide-y divide-slate-100 bg-white">
+            {/* Inlined row render with fresh closures per render. At this size
+                the closure churn and lack of row-level memoization are
+                unmeasurable. When row count crosses ~100, extract <PatientRow
+                />, React.memo it, and stabilize the three handlers below —
+                onClick/onFocus/onKeyDown all close over `i`, so this likely
+                wants a single delegated keydown on <tbody> reading data-row-
+                index, not per-row useCallback. Pair with virtualization (see
+                the comment above and README "When this scales") — same
+                trigger, same testing burden. */}
             {visiblePatients.map((patient, i) => (
               <tr
                 key={patient.id}

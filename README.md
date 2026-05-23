@@ -57,6 +57,18 @@ _This section was written after the timer; some code edits were also made post-t
 
 2. **ARIA grid pattern on the roster — roving tabindex + arrow keys.** Charge nurses drive this view keyboard-heavy across a full shift. Today every row is its own tab stop (Enter / Space opens), so traversing the table is N tab stops. Grid pattern collapses that to one tab stop with arrows moving between rows. *Second because it's working today — but the user the tool exists for is the one for whom "working" is the lowest bar.* — row implementation at [PatientCensus.tsx](src/components/PatientCensus.tsx) `tbody` map.
 
+### When this scales
+
+_Today: 8-patient fixture, in-memory. The hardening shipped (memoized `visiblePatients`, lifted `.toLowerCase()`) covers actual per-render cost. The items below are sited comments in [PatientCensus.tsx](src/components/PatientCensus.tsx) today — they become work when the data shape changes, not before. Listed in the order they typically arrive._
+
+1. **Server-side sort + filter.** When patients live in a database, sort and filter move to the query (`ORDER BY`, `WHERE name ILIKE`, indexed sort columns). The comparator map becomes the API contract (`?sort=room:asc`). Client gets debounce + `AbortController` on the search input. *First because every other item assumes a round-trip exists.*
+
+2. **Real-time updates with stable sort.** Census data is live — admits, discharges, status changes stream in. Naive re-sort on every update reorders rows under the user's cursor. Paired fixes: stable secondary key (id) so equal-key rows don't shuffle, and freeze sort while a row is focused or the detail panel is open. *Second because the day a row jumps mid-click is the day they stop trusting the tool.*
+
+3. **Multi-column sort.** Charge nurses sort status desc, then room asc, in one view. `sort` becomes `Array<{key, dir}>`, `compareBy` walks the array and returns on first non-zero. Header click adds/promotes; shift-click appends; small numeric badge per active column. *Third because it's a real workflow but only useful once the data layer keeps up.*
+
+4. **Virtualization, not pagination.** At ~200 rows the inlined row map is a measurable reconciliation cost. For a bounded view (one ward = ~30-60 beds, scanned not paginated) virtualize rather than paginate. Pair with extracting `<PatientRow />` + `React.memo` (see the comment at the `tbody` map). Likely move from `<table>` to `role="grid"` divs so sticky-header stays clean — same shape the ARIA grid pattern in Next Sprint already wants. *Fourth because it's the largest refactor and the one most likely to be wrong if done before there's real data to measure against.*
+
 ### Backlog (polish, not load-bearing)
 
 _Listed roughly in order of user-impact, not effort._
