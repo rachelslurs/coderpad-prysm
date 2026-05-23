@@ -345,14 +345,18 @@ export default function PatientCensus() {
                   rowRefs.current[i] = el;
                 }}
                 tabIndex={activeRowIndex === i ? 0 : -1}
-                // Active row (roving tabindex target) gets a subtle slate-50
-                // tint so the user can see where Tab will land before tabbing.
-                // Hover (teal-50) wins over it when the mouse moves to a row.
-                // transition-[background-color] (not transition-colors) so the
-                // divide-y border between rows doesn't animate when sort
-                // reorders the DOM — border-color is part of transition-colors.
-                className={`group cursor-pointer transition-[background-color] hover:bg-teal-50 focus:outline-none focus-visible:bg-teal-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-teal-600 ${
-                  activeRowIndex === i ? "bg-slate-50" : ""
+                // Zebra striping for visual rhythm; active row (roving tabindex
+                // target) bumps a step darker than even rows so it still reads
+                // as distinct. Hover (teal-50) wins over both. transition-
+                // [background-color] (not transition-colors) so the divide-y
+                // border between rows doesn't animate when sort reorders the
+                // DOM — border-color is part of transition-colors.
+                className={`group cursor-pointer transition-[background-color] hover:bg-teal-100 focus:outline-none focus-visible:bg-teal-100 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-teal-600 ${
+                  activeRowIndex === i
+                    ? "bg-teal-50"
+                    : i % 2 === 1
+                      ? "bg-slate-50"
+                      : ""
                 }`}
                 onClick={(e) => openPanel(patient, e)}
                 onFocus={() => setActiveRowIndex(i)}
