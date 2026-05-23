@@ -190,7 +190,7 @@ export default function PatientCensus() {
   };
 
   const thBase =
-    "bg-white px-6 py-4 text-left font-['Archivo'] text-lg font-bold whitespace-nowrap transition-colors";
+    "bg-white px-6 py-4 text-left text-lg font-bold whitespace-nowrap transition-colors";
   const thInactive = `${thBase} border-b-2 border-slate-200 text-slate-700`;
   // Sortable headers carry click+keyboard handlers on the <th> itself so the
   // entire cell is the hit target. Active-sort gets teal text/bg/border —
@@ -219,7 +219,7 @@ export default function PatientCensus() {
   return (
     <>
       <header className="grid flex-none grid-cols-[1fr_auto] items-center gap-4 border-b border-slate-800 bg-slate-900 px-6 py-4 shadow-md md:grid-cols-3">
-        <h1 className="hidden items-baseline gap-2 whitespace-nowrap font-['Archivo'] text-xl font-black tracking-tight text-white md:inline-flex">
+        <h1 className="hidden items-baseline gap-2 whitespace-nowrap text-xl font-extrabold tracking-tight text-white md:inline-flex">
           <span>1 North</span>
           <span className="text-lg font-medium text-slate-400">Census</span>
         </h1>
@@ -302,7 +302,7 @@ export default function PatientCensus() {
             <col className="w-32" />
             <col className="w-60" />
             <col className="w-20" />
-            <col className="w-44" />
+            <col className="w-52" />
             <col className="w-72" />
             <col className="w-56" />
           </colgroup>
@@ -383,14 +383,14 @@ export default function PatientCensus() {
                 }}
               >
                 <td
-                  className={`px-6 py-3.5 align-middle font-['Archivo'] text-base text-slate-600 ${ROW_ACCENT[patient.status]}`}
+                  className={`px-6 py-3.5 align-middle text-base text-slate-600 ${ROW_ACCENT[patient.status]}`}
                 >
                   {formatRoom(patient.room)}
                 </td>
-                <td className="px-6 py-3.5 align-middle font-['Archivo'] text-xl font-black leading-tight text-slate-900">
+                <td className="px-6 py-3.5 align-middle text-xl font-extrabold leading-tight text-slate-900">
                   {hideNames ? toInitials(patient.name) : patient.name}
                 </td>
-                <td className="px-6 py-3.5 align-middle tabular-nums text-slate-700">
+                <td className="px-6 py-3.5 align-middle text-base tabular-nums text-slate-600">
                   {patient.age}
                 </td>
                 <td className="px-6 py-3.5 align-middle text-slate-600">

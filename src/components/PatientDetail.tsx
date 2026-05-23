@@ -37,7 +37,7 @@ export default function PatientDetail({
   const los = calculateLOS(patient.admittedOn);
 
   const tierLabel =
-    "mb-3 font-['Archivo'] text-sm font-bold uppercase tracking-widest text-slate-500";
+    "mb-3 text-sm font-bold uppercase tracking-widest text-slate-500";
   const fieldLabel = "text-sm font-semibold text-slate-500";
   const fieldValue = "text-xl font-bold text-slate-900";
 
@@ -72,10 +72,10 @@ export default function PatientDetail({
 
         <div className="flex items-start justify-between pr-2">
           <div>
-            <h2 className="mb-3 font-['Archivo'] text-4xl font-black leading-tight tracking-tight text-slate-900">
+            <h2 className="mb-3 text-4xl font-extrabold leading-tight tracking-tight text-slate-900">
               {displayName}
             </h2>
-            <div className="mb-1 flex items-baseline font-['Archivo'] text-base font-bold uppercase tracking-widest text-slate-600">
+            <div className="mb-1 flex items-baseline text-base font-bold uppercase tracking-widest text-slate-600">
               <span className="ml-1">Room {formatRoom(patient.room)}</span>
             </div>
           </div>
@@ -95,13 +95,13 @@ export default function PatientDetail({
               </div>
               <div>
                 <div className={fieldLabel}>Primary Diagnosis</div>
-                <div className="text-3xl font-black text-slate-900">
+                <div className="text-3xl font-extrabold text-slate-900">
                   {patient.diagnosis}
                 </div>
               </div>
             </div>
             <div className="flex flex-col items-center justify-center rounded-md border border-slate-200 bg-white p-4 text-center shadow-sm">
-              <div className="text-3xl font-black text-slate-900">
+              <div className="text-2xl font-bold text-slate-700">
                 Day {los.days}
               </div>
             </div>

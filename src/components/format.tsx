@@ -9,7 +9,7 @@ export const formatRoom = (room: string) => {
   const [, digits, suffix] = match;
   return (
     <>
-      <span className="font-black">{digits}</span>
+      <span className="font-extrabold">{digits}</span>
       {suffix && <span className="ml-0.5 font-normal">{suffix}</span>}
     </>
   );
