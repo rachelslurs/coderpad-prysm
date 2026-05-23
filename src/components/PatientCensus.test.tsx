@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, within } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
 import PatientCensus from "./PatientCensus";
 import { PATIENTS } from "../../data/patients";
@@ -80,9 +80,13 @@ describe("Patient Census — detail panel", () => {
   it("displays the selected patient's clinical details", () => {
     render(<PatientCensus />);
     fireEvent.click(screen.getByText("Harold Kim").closest("tr")!);
-    expect(screen.getByText(/sepsis/i)).toBeInTheDocument();
-    expect(screen.getByText(/dr\. aisha brooks/i)).toBeInTheDocument();
-    expect(screen.getByText(/medicare part a/i)).toBeInTheDocument();
+    // Side-by-side layout keeps the row visible, so the row's Diagnosis /
+    // Physician cells now coexist with the panel's. Scope the assertions to the
+    // panel — that's what this test is actually asserting.
+    const panel = screen.getByTestId("detail-panel");
+    expect(within(panel).getByText(/sepsis/i)).toBeInTheDocument();
+    expect(within(panel).getByText(/dr\. aisha brooks/i)).toBeInTheDocument();
+    expect(within(panel).getByText(/medicare part a/i)).toBeInTheDocument();
   });
 
   it("closes the panel when the close button is clicked", () => {
