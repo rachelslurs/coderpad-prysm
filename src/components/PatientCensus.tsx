@@ -188,10 +188,10 @@ export default function PatientCensus() {
         className="ml-1 inline-flex flex-col leading-none"
       >
         <ChevronUp
-          className={`h-4 w-4 ${ascActive ? "text-teal-800" : "text-slate-500"}`}
+          className={`h-4 w-4 ${ascActive ? "text-teal-800" : "text-slate-400"}`}
         />
         <ChevronDown
-          className={`-mt-1.5 h-4 w-4 ${descActive ? "text-teal-800" : "text-slate-500"}`}
+          className={`-mt-1.5 h-4 w-4 ${descActive ? "text-teal-800" : "text-slate-400"}`}
         />
       </span>
     );
