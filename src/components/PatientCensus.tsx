@@ -227,9 +227,8 @@ export default function PatientCensus() {
   return (
     <>
       <header className="grid flex-none grid-cols-[1fr_auto] items-center gap-4 border-b border-slate-800 bg-slate-900 px-6 py-4 shadow-md md:grid-cols-3">
-        <h1 className="hidden items-baseline gap-2 whitespace-nowrap text-xl font-extrabold tracking-tight text-white md:inline-flex">
-          <span>1 North</span>
-          <span className="text-lg font-medium text-slate-400">Census</span>
+        <h1 className="hidden items-baseline gap-2 whitespace-nowrap text-xl font-semibold tracking-normal text-white/90 md:inline-flex">
+          1 North Census
         </h1>
 
         <div className="group relative justify-self-start md:justify-self-center">
