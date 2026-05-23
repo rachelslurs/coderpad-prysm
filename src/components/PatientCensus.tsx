@@ -188,10 +188,10 @@ export default function PatientCensus() {
         className="ml-1 inline-flex flex-col leading-none"
       >
         <ChevronUp
-          className={`h-4 w-4 ${ascActive ? "text-teal-600" : "text-slate-400"}`}
+          className={`h-4 w-4 ${ascActive ? "text-teal-600" : "text-slate-500"}`}
         />
         <ChevronDown
-          className={`-mt-1.5 h-4 w-4 ${descActive ? "text-teal-600" : "text-slate-400"}`}
+          className={`-mt-1.5 h-4 w-4 ${descActive ? "text-teal-600" : "text-slate-500"}`}
         />
       </span>
     );
@@ -205,7 +205,7 @@ export default function PatientCensus() {
   // keep border-b-2 in both directions so nothing visually jumps when the
   // user toggles the direction.
   const sortableTh =
-    "cursor-pointer select-none hover:text-teal-700 focus:outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-teal-500";
+    "cursor-pointer select-none hover:text-teal-700 focus:outline-none focus-visible:bg-teal-100 focus-visible:text-teal-800 focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-teal-700";
   const thFor = (key: keyof Patient) => {
     if (sort.key !== key) return `${thInactive} ${sortableTh}`;
     return `${thBase} border-b-2 border-teal-500 bg-teal-50/60 text-teal-700 ${sortableTh}`;
