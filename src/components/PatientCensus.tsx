@@ -289,7 +289,7 @@ export default function PatientCensus() {
           aria-label={hideNames ? "Privacy on" : "Privacy off"}
           className={`inline-flex min-h-[42px] items-center gap-2 justify-self-end whitespace-nowrap rounded border px-3 py-2 text-base font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 ${
             hideNames
-              ? "border-teal-500 bg-teal-500 text-white hover:bg-teal-400"
+              ? "border-teal-500 bg-teal-400 text-white hover:bg-teal-400"
               : "border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700"
           }`}
         >
@@ -378,7 +378,7 @@ export default function PatientCensus() {
                 // [background-color] (not transition-colors) so the divide-y
                 // border between rows doesn't animate when sort reorders the
                 // DOM — border-color is part of transition-colors.
-                className={`group cursor-pointer transition-[background-color] hover:bg-teal-100 focus:outline-none focus-visible:bg-teal-100 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-teal-600 ${
+                className={`group cursor-pointer transition-[background-color] hover:bg-teal-50 focus:outline-none focus-visible:bg-teal-100 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-teal-600 ${
                   activeRowIndex === i
                     ? "bg-teal-50"
                     : i % 2 === 1
