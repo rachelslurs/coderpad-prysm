@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expect } from "storybook/test";
 import { ArrowLeft, Plus, Check } from "lucide-react";
 import Button from "./Button";
 
@@ -30,4 +31,20 @@ export const WithIcon: Story = {
 };
 export const Touch: Story = {
   args: { size: "touch", iconLeft: Check, children: "Mark complete" },
+};
+
+// The single project-wide CssCheck: proves the design-system token CSS
+// (theme.css's @theme tokens) actually loaded into the preview. Our neutral
+// scale is authored as hex from the design bundle; custom-property values are
+// returned verbatim (not color-normalized), so this is deterministic. If
+// theme.css didn't load, the variable resolves to "".
+export const CssCheck: Story = {
+  args: { size: "touch", children: "Mark complete" },
+  play: async ({ canvas }) => {
+    const button = canvas.getByRole("button", { name: /mark complete/i });
+    const neutral900 = getComputedStyle(button)
+      .getPropertyValue("--color-neutral-900")
+      .trim();
+    await expect(neutral900).toBe("#0c1526");
+  },
 };

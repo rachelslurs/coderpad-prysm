@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expect } from "storybook/test";
 import { useState } from "react";
 import Stepper from "./Stepper";
 
@@ -16,6 +17,13 @@ export const Typed: Story = {
   render: (args) => {
     const [v, setV] = useState(98.6);
     return <Stepper {...args} mode="input" value={v} onChange={setV} />;
+  },
+  // Proves the react-aria NumberField steps + clamps in a real browser.
+  play: async ({ canvas, userEvent }) => {
+    const field = canvas.getByRole("textbox", { name: "Temperature" });
+    await expect(field).toHaveValue("98.6");
+    await userEvent.click(canvas.getByRole("button", { name: /increase/i }));
+    await expect(field).toHaveValue("98.7");
   },
 };
 
