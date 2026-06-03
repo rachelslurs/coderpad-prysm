@@ -20,6 +20,12 @@ export { Section } from "./Section";
 export type { SectionProps } from "./Section";
 export { IconField } from "./IconField";
 export type { IconFieldProps } from "./IconField";
+export { SortIndicator } from "./SortIndicator";
+export type { SortIndicatorProps } from "./SortIndicator";
+export { ColumnHeader } from "./ColumnHeader";
+export type { ColumnHeaderProps, SortDirection } from "./ColumnHeader";
+export { EmptyState } from "./EmptyState";
+export type { EmptyStateProps } from "./EmptyState";
 
 // Organisms
 export { OverlayPanel } from "./OverlayPanel";
