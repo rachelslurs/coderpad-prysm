@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
-import type { Patient } from "../../data/patients.ts";
+import type { Patient } from "../types";
 import { ArrowLeft, HandHeart, Stethoscope, Clock, Calendar, ShieldCheck } from "lucide-react";
 import StatusBadge from "./StatusBadge";
-import { formatRoom, toInitials, calculateLOS } from "./format";
+import { formatRoom, toInitials, calculateLOS } from "../lib/format";
 
 type PatientDetailProps = {
   patient: Patient;
