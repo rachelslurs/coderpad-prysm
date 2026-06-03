@@ -41,7 +41,7 @@ export default function PatientDetail({
       role="region"
       aria-label={`Details for ${displayName}`}
       data-testid="detail-panel"
-      className="bg-slate-50"
+      className="bg-neutral-50"
     >
       <header className="flex-none border-b border-neutral-200 bg-white px-6 py-5">
         <div className="-ml-2 mb-4 flex items-center gap-1.5">

@@ -20,7 +20,7 @@ const preview: Preview = {
   // story so they read the same in isolation.
   decorators: [
     (Story) => (
-      <div className="bg-slate-50 font-['Figtree'] text-slate-900 p-6">
+      <div className="bg-neutral-50 font-['Figtree'] text-neutral-900 p-6">
         <Story />
       </div>
     ),
