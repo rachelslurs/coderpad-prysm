@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import SortIndicator from "./SortIndicator";
 
 const meta = {
-  title: "Atoms/SortIndicator",
+  title: "Data Display/SortIndicator",
   component: SortIndicator,
   tags: ["autodocs"],
   argTypes: { dir: { control: "inline-radio", options: ["asc", "desc"] } },

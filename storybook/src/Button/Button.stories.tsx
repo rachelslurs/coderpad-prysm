@@ -3,7 +3,7 @@ import { ArrowLeft, Plus } from "lucide-react";
 import Button from "./Button";
 
 const meta = {
-  title: "Atoms/Button",
+  title: "Actions/Button",
   component: Button,
   tags: ["autodocs"],
   argTypes: {

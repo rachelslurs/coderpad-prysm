@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import Kbd from "./Kbd";
 
 const meta = {
-  title: "Atoms/Kbd",
+  title: "Keyboard/Kbd",
   component: Kbd,
   tags: ["autodocs"],
   args: { children: "ESC" },

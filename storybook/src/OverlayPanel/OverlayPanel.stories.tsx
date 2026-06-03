@@ -3,7 +3,7 @@ import OverlayPanel from "./OverlayPanel";
 import { Button } from "../Button";
 
 const meta = {
-  title: "Organisms/OverlayPanel",
+  title: "Overlays/OverlayPanel",
   component: OverlayPanel,
   parameters: { layout: "fullscreen" },
   tags: ["autodocs"],

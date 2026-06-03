@@ -3,7 +3,7 @@ import { Stethoscope } from "lucide-react";
 import IconField from "./IconField";
 
 const meta = {
-  title: "Molecules/IconField",
+  title: "Data Display/IconField",
   component: IconField,
   tags: ["autodocs"],
   argTypes: {
