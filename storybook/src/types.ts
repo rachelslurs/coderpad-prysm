@@ -1,20 +1,13 @@
-// Canonical domain types for the design system. Components own the shape of the
-// data they render so they don't reach back into any app's data layer.
-//
-// This is intentionally kept structurally identical to the app's patient fixture
-// (`app/data/patients.ts`). Structural typing lets the app pass its own `Patient`
-// values straight into these components without a conversion layer.
+// Shared types for the design system. Everything here is generic — no domain
+// (patient) knowledge lives in this package.
 
-export type PatientStatus = "Stable" | "Needs Attention" | "Critical";
-
-export type Patient = {
-  id: number;
-  name: string;
-  room: string;
-  age: number;
-  physician: string;
-  status: PatientStatus;
-  diagnosis: string;
-  admittedOn: string;
-  insurance: string;
-};
+// Semantic color tones, backed by the tokens in styles/theme.css. Components
+// accept a Tone and map it to utility classes, so consumers style by meaning
+// (danger / success / …) instead of raw palette names.
+export type Tone =
+  | "neutral"
+  | "accent"
+  | "info"
+  | "success"
+  | "warning"
+  | "danger";
