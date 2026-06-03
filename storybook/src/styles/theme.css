@@ -5,11 +5,13 @@
  * accent), never by raw palette names (rose / amber / slate / teal). Re-skinning
  * a tone is a one-line change here and every consumer follows.
  *
- * Values are Tailwind v4's own palette, inlined as literal oklch so the tokens
- * are self-contained (no runtime dependency on whether the source palette
- * happens to be used in a given build). Current mapping:
- *   neutral → slate   accent → teal   info → sky
- *   success → emerald warning → amber  danger → rose
+ * Tones are self-contained (literal values, no runtime palette dependency).
+ * accent / info / success / warning / danger use Tailwind v4's palette (oklch)
+ * = teal / sky / emerald / amber / rose. The neutral spine uses the Prysm design
+ * bundle's "cooled-toward-blue" slate (hex) — the one place this system departs
+ * from stock Tailwind. Mapping:
+ *   neutral → Prysm slate   accent → teal   info → sky
+ *   success → emerald       warning → amber danger → rose
  *
  * `@theme static` keeps every token in :root regardless of usage, so a tone is
  * available both as a utility (bg-danger-500, text-danger-700, border-danger-200)
@@ -17,17 +19,19 @@
  * ------------------------------------------------------------------------- */
 @theme static {
   /* neutral — slate */
-  --color-neutral-50: oklch(98.4% 0.003 247.858);
-  --color-neutral-100: oklch(96.8% 0.007 247.896);
-  --color-neutral-200: oklch(92.9% 0.013 255.508);
-  --color-neutral-300: oklch(86.9% 0.022 252.894);
-  --color-neutral-400: oklch(70.4% 0.04 256.788);
-  --color-neutral-500: oklch(55.4% 0.046 257.417);
-  --color-neutral-600: oklch(44.6% 0.043 257.281);
-  --color-neutral-700: oklch(37.2% 0.044 257.287);
-  --color-neutral-800: oklch(27.9% 0.041 260.031);
-  --color-neutral-900: oklch(20.8% 0.042 265.755);
-  --color-neutral-950: oklch(12.9% 0.042 264.695);
+  /* neutral — Prysm "cooled-toward-blue" slate (from the design bundle's
+     colors_and_type.css), the system's signature neutral spine. */
+  --color-neutral-50: #f5f7fb;
+  --color-neutral-100: #eaeff8;
+  --color-neutral-200: #d9e1ef;
+  --color-neutral-300: #bfcadf;
+  --color-neutral-400: #8995b3;
+  --color-neutral-500: #596884;
+  --color-neutral-600: #414f6c;
+  --color-neutral-700: #2d3a54;
+  --color-neutral-800: #1a2540;
+  --color-neutral-900: #0c1526;
+  --color-neutral-950: #040813;
 
   /* accent — teal (the interactive color) */
   --color-accent-50: oklch(98.4% 0.014 180.72);
