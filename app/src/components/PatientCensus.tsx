@@ -1,14 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { PATIENTS, type Patient } from "../../data/patients.ts";
-import {
-  Search,
-  X,
-  Eye,
-  EyeOff,
-  ChevronUp,
-  ChevronDown,
-} from "lucide-react";
-import { toInitials } from "@prysm/design-system";
+import { Search, X, Eye, EyeOff } from "lucide-react";
+import { ColumnHeader, EmptyState, toInitials } from "@prysm/design-system";
 import StatusBadge from "./StatusBadge";
 import PatientDetail from "./PatientDetail";
 import { formatRoom } from "../lib/format";
@@ -49,31 +42,6 @@ const ROW_ACCENT: Record<Patient["status"], string> = {
   Critical: "shadow-[inset_4px_0_0_#f43f5e]",
   "Needs Attention": "shadow-[inset_4px_0_0_#f59e0b]",
   Stable: "",
-};
-
-// Stacked chevrons so both directions are always visible — the active one lights
-// teal, the other stays slate. Reads more clearly than a single arrow that swaps
-// in/out: the user can see which direction "more sort" would go. Hoisted to
-// module scope (not redefined per render) so it keeps a stable identity.
-const SortIcon = ({
-  active,
-  dir,
-}: {
-  active: boolean;
-  dir: "asc" | "desc";
-}) => {
-  const ascActive = active && dir === "asc";
-  const descActive = active && dir === "desc";
-  return (
-    <span aria-hidden="true" className="ml-1 inline-flex flex-col leading-none">
-      <ChevronUp
-        className={`h-4 w-4 ${ascActive ? "text-teal-800" : "text-slate-400"}`}
-      />
-      <ChevronDown
-        className={`-mt-1.5 h-4 w-4 ${descActive ? "text-teal-800" : "text-slate-400"}`}
-      />
-    </span>
-  );
 };
 
 export default function PatientCensus() {
@@ -190,42 +158,6 @@ export default function PatientCensus() {
     );
   };
 
-  const ariaSortFor = (
-    key: keyof Patient
-  ): "ascending" | "descending" | "none" =>
-    sort.key === key
-      ? sort.dir === "asc"
-        ? "ascending"
-        : "descending"
-      : "none";
-
-  const thBase =
-    "bg-white px-6 py-4 text-left text-lg font-bold whitespace-nowrap transition-colors";
-  const thInactive = `${thBase} border-b-2 border-slate-200 text-slate-700`;
-  // Sortable headers carry click+keyboard handlers on the <th> itself so the
-  // entire cell is the hit target. Active-sort gets teal text/bg/border —
-  // keep border-b-2 in both directions so nothing visually jumps when the
-  // user toggles the direction.
-  const sortableTh =
-    "cursor-pointer select-none hover:text-teal-700 focus:outline-none focus-visible:bg-teal-100 focus-visible:text-teal-800 focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-teal-700";
-  const thFor = (key: keyof Patient) => {
-    if (sort.key !== key) return `${thInactive} ${sortableTh}`;
-    return `${thBase} border-b-2 border-teal-500 bg-teal-50/60 text-teal-700 ${sortableTh}`;
-  };
-  const sortableThProps = (key: keyof Patient) => ({
-    scope: "col" as const,
-    "aria-sort": ariaSortFor(key),
-    className: thFor(key),
-    tabIndex: 0,
-    onClick: () => handleSort(key),
-    onKeyDown: (e: React.KeyboardEvent<HTMLTableCellElement>) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        handleSort(key);
-      }
-    },
-  });
-
   return (
     <>
       <header className="grid flex-none grid-cols-[1fr_auto] items-center gap-4 border-b border-slate-800 bg-slate-900 px-6 py-4 shadow-md md:grid-cols-3">
@@ -322,33 +254,30 @@ export default function PatientCensus() {
           </colgroup>
           <thead className="sticky top-0 z-10">
             <tr>
-              <th {...sortableThProps("room")}>
-                <span className="flex w-full items-center justify-between gap-2">
-                  <span>Room</span>
-                  <SortIcon active={sort.key === "room"} dir={sort.dir} />
-                </span>
-              </th>
-              <th {...sortableThProps("name")}>
-                <span className="flex w-full items-center justify-between gap-2">
-                  <span>Patient</span>
-                  <SortIcon active={sort.key === "name"} dir={sort.dir} />
-                </span>
-              </th>
-              <th scope="col" className={thInactive}>
-                Age
-              </th>
-              <th scope="col" className={thInactive}>
-                Physician
-              </th>
-              <th scope="col" className={thInactive}>
-                Diagnosis
-              </th>
-              <th {...sortableThProps("status")}>
-                <span className="flex w-full items-center justify-between gap-2">
-                  <span>Status</span>
-                  <SortIcon active={sort.key === "status"} dir={sort.dir} />
-                </span>
-              </th>
+              <ColumnHeader
+                active={sort.key === "room"}
+                direction={sort.dir}
+                onSort={() => handleSort("room")}
+              >
+                Room
+              </ColumnHeader>
+              <ColumnHeader
+                active={sort.key === "name"}
+                direction={sort.dir}
+                onSort={() => handleSort("name")}
+              >
+                Patient
+              </ColumnHeader>
+              <ColumnHeader>Age</ColumnHeader>
+              <ColumnHeader>Physician</ColumnHeader>
+              <ColumnHeader>Diagnosis</ColumnHeader>
+              <ColumnHeader
+                active={sort.key === "status"}
+                direction={sort.dir}
+                onSort={() => handleSort("status")}
+              >
+                Status
+              </ColumnHeader>
             </tr>
           </thead>
           {/* No virtualization. table-fixed + colgroup locks layout so scroll
@@ -441,12 +370,7 @@ export default function PatientCensus() {
         </table>
 
         {visiblePatients.length === 0 && (
-          <div
-            role="status"
-            className="px-4 py-12 text-center text-base text-slate-500"
-          >
-            No patients match your search.
-          </div>
+          <EmptyState>No patients match your search.</EmptyState>
         )}
         </div>
 
