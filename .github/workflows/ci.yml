@@ -43,6 +43,10 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Install Playwright (Chromium)
+        # The design-system runs its Storybook stories as browser tests
+        # (@storybook/addon-vitest) during `pnpm test`.
+        run: pnpm --filter @prysm/design-system exec playwright install --with-deps chromium
       - name: Test
         run: pnpm test
 
