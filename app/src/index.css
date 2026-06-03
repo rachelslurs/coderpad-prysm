@@ -1,6 +1,11 @@
 @import url("https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 
+/* Shared semantic color tones from the design system, so tone utilities
+   (bg-danger-500, text-accent-700, …) are available to the app and to the
+   design-system components it consumes. */
+@import "@prysm/design-system/theme.css";
+
 /* The design-system components live in a sibling workspace package and are
    consumed as source. Tailwind must scan them so the utility classes they use
    are generated into the app's stylesheet. */
