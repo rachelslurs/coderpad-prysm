@@ -13,7 +13,7 @@ const TONES: Tone[] = [
 ];
 
 const meta = {
-  title: "Atoms/Badge",
+  title: "Data Display/Badge",
   component: Badge,
   tags: ["autodocs"],
   argTypes: {

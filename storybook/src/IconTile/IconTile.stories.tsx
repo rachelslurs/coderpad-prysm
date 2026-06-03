@@ -3,7 +3,7 @@ import { Stethoscope } from "lucide-react";
 import IconTile from "./IconTile";
 
 const meta = {
-  title: "Atoms/IconTile",
+  title: "Data Display/IconTile",
   component: IconTile,
   tags: ["autodocs"],
   argTypes: {

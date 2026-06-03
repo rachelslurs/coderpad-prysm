@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import Field from "./Field";
 
 const meta = {
-  title: "Molecules/Field",
+  title: "Data Display/Field",
   component: Field,
   tags: ["autodocs"],
   argTypes: { size: { control: "inline-radio", options: ["md", "lg"] } },
