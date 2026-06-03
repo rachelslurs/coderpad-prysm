@@ -35,4 +35,9 @@ describe("Button", () => {
     render(<Button data-testid="cta">Go</Button>);
     expect(screen.getByTestId("cta")).toBeInTheDocument();
   });
+
+  it("applies the 48px touch size", () => {
+    render(<Button size="touch">Mark complete</Button>);
+    expect(screen.getByRole("button").className).toContain("min-h-12");
+  });
 });

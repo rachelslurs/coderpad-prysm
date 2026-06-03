@@ -18,9 +18,10 @@ const meta = {
   tags: ["autodocs"],
   argTypes: {
     tone: { control: "inline-radio", options: TONES },
+    size: { control: "inline-radio", options: ["sm", "md"] },
     interactive: { control: "boolean" },
   },
-  args: { tone: "neutral", children: "Label", interactive: false },
+  args: { tone: "neutral", size: "md", children: "Label", interactive: false },
 } satisfies Meta<typeof Badge>;
 
 export default meta;
@@ -30,6 +31,10 @@ export const Default: Story = {};
 
 export const WithIcon: Story = {
   args: { tone: "danger", icon: AlertOctagon, children: "Critical" },
+};
+
+export const Small: Story = {
+  args: { size: "sm", tone: "danger", icon: AlertOctagon, children: "Fall Risk" },
 };
 
 export const AllTones: Story = {
