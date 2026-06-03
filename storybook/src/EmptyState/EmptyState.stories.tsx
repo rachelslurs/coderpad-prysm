@@ -3,7 +3,7 @@ import { SearchX } from "lucide-react";
 import EmptyState from "./EmptyState";
 
 const meta = {
-  title: "Molecules/EmptyState",
+  title: "Feedback/EmptyState",
   component: EmptyState,
   tags: ["autodocs"],
   args: { children: "No results match your search." },

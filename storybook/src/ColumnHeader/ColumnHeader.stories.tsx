@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import ColumnHeader from "./ColumnHeader";
 
 const meta = {
-  title: "Molecules/ColumnHeader",
+  title: "Data Display/ColumnHeader",
   component: ColumnHeader,
   tags: ["autodocs"],
   // A <th> needs table context to be valid.
