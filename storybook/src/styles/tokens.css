@@ -1,0 +1,9 @@
+/* Tailwind entry for the design system. Loaded by Storybook's preview so stories
+   render with the same utilities the app generates. The app has its own Tailwind
+   entry and scans this package's source via @source, so this file is only used
+   inside Storybook. */
+@import url("https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap");
+@import "tailwindcss";
+
+/* Scan every component, helper, and story in this package. */
+@source "../";
