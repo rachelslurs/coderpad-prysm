@@ -7,7 +7,14 @@ import type { Tone } from "../types";
 // Redundant encoding (color + optional icon + text) keeps it WCAG-friendly: the
 // label carries meaning even without color.
 const BASE =
-  "inline-flex items-center gap-1.5 whitespace-nowrap rounded border px-2.5 py-1 text-base font-medium transition-all";
+  "inline-flex items-center whitespace-nowrap rounded border font-medium transition-all";
+
+const SIZE = {
+  md: "gap-1.5 px-2.5 py-1 text-base",
+  sm: "gap-1 px-2 py-0.5 text-xs",
+} as const;
+
+const ICON_SIZE = { md: "h-3.5 w-3.5", sm: "h-3 w-3" } as const;
 
 // Literal per-tone class strings (Tailwind only generates classes it can see as
 // whole strings — these can't be built dynamically).
@@ -39,6 +46,8 @@ const TONE_INTERACTIVE: Record<Tone, string> = {
 export type BadgeProps = {
   /** Semantic color tone. Defaults to `neutral`. */
   tone?: Tone;
+  /** Size. `md` (default) or `sm` (the compact "flag"). */
+  size?: keyof typeof SIZE;
   /** Optional leading icon (inherits the label color via `currentColor`). */
   icon?: LucideIcon;
   /** Deepen on ancestor `.group` hover. */
@@ -48,15 +57,16 @@ export type BadgeProps = {
 
 export default function Badge({
   tone = "neutral",
+  size = "md",
   icon: Icon,
   interactive = false,
   children,
 }: BadgeProps) {
   return (
     <span
-      className={`${BASE} ${TONE[tone]}${interactive ? ` ${TONE_INTERACTIVE[tone]}` : ""}`}
+      className={`${BASE} ${SIZE[size]} ${TONE[tone]}${interactive ? ` ${TONE_INTERACTIVE[tone]}` : ""}`}
     >
-      {Icon && <Icon className="h-3.5 w-3.5" aria-hidden="true" />}
+      {Icon && <Icon className={ICON_SIZE[size]} aria-hidden="true" />}
       <span>{children}</span>
     </span>
   );

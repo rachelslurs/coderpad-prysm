@@ -98,3 +98,35 @@
   --color-danger-900: oklch(41% 0.159 10.272);
   --color-danger-950: oklch(27.1% 0.105 12.094);
 }
+
+/* Skeleton shimmer — consumed by the Skeleton primitive. Lives here (not a
+   co-located CSS import) so both the app and Storybook pick it up and the
+   component stays pure class names. */
+@keyframes prysm-shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+.prysm-skeleton {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--color-neutral-100);
+}
+.prysm-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.65),
+    transparent
+  );
+  animation: prysm-shimmer 1.4s infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .prysm-skeleton::after {
+    animation: none;
+  }
+}

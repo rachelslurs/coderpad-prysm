@@ -30,6 +30,16 @@ describe("Badge", () => {
     expect(container.querySelector("svg")).toBeNull();
   });
 
+  it("applies compact size classes at size='sm'", () => {
+    render(
+      <Badge tone="danger" size="sm">
+        Fall Risk
+      </Badge>
+    );
+    const container = screen.getByText("Fall Risk").closest("span")?.parentElement;
+    expect(container?.className).toContain("text-xs");
+  });
+
   it("adds group-hover hooks only when interactive", () => {
     const { rerender, container } = render(<Badge tone="warning">x</Badge>);
     expect(container.firstElementChild?.className).not.toContain("group-hover");

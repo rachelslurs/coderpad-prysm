@@ -6,6 +6,8 @@ export { Button } from "./Button";
 export type { ButtonProps } from "./Button";
 
 // Data display
+export { Avatar } from "./Avatar";
+export type { AvatarProps } from "./Avatar";
 export { Badge } from "./Badge";
 export type { BadgeProps } from "./Badge";
 export { Card } from "./Card";
@@ -26,6 +28,8 @@ export type { ColumnHeaderProps, SortDirection } from "./ColumnHeader";
 // Feedback
 export { EmptyState } from "./EmptyState";
 export type { EmptyStateProps } from "./EmptyState";
+export { Skeleton } from "./Skeleton";
+export type { SkeletonProps } from "./Skeleton";
 
 // Overlays
 export { OverlayPanel } from "./OverlayPanel";
