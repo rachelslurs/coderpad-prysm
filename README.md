@@ -5,37 +5,50 @@ React + TypeScript take-home exercise. Renders a patient census with search, sor
 ## Stack
 
 - React 19 + TypeScript
+- pnpm workspaces + Turborepo (monorepo)
 - Vite (dev + build)
 - Vitest + Testing Library (jsdom)
-- Tailwind v4
+- Tailwind v4 — semantic color tones via `@theme`
+- Storybook 10 — design-system catalog
 
 ## Scripts
 
 ```bash
-npm install
-npm run dev        # start dev server
-npm run test       # run tests once
-npm run test:watch # watch mode
-npm run build      # typecheck + production build
-npm run lint
+pnpm install
+pnpm dev          # app dev server (Vite)
+pnpm storybook    # design-system Storybook
+pnpm test         # run all workspace tests once
+pnpm build        # typecheck + build the app and Storybook
+pnpm lint
 ```
 
 ## Layout
 
+A monorepo: a deployable app that composes generic, context-agnostic primitives
+from a design-system package.
+
 ```
-data/
-  patients.ts             — fixture data + Patient type
-src/
-  App.tsx                 — app shell
-  main.tsx                — entry
-  components/
-    PatientCensus.tsx     — dark command bar + sortable roster (covers with detail on row click)
-    PatientCensus.test.tsx
-    PatientDetail.tsx     — single-patient overlay, three-tier hierarchy (Clinical / Care / Admin)
-    StatusBadge.tsx       — Critical / Needs Attention / Stable (icon + label, paired with row accent)
-    format.tsx            — small UI helpers shared by roster and panel (formatRoom, toInitials, calculateLOS)
-  test/                   — Vitest setup
+app/                          — @prysm/app, the deployed Vite app
+  data/patients.ts            — fixture data + Patient type
+  src/
+    App.tsx                   — app shell
+    main.tsx                  — entry
+    components/
+      PatientCensus.tsx       — dark command bar + sortable roster (opens detail on row click)
+      PatientDetail.tsx       — single-patient overlay, three-tier hierarchy (Clinical / Care / Admin)
+      StatusBadge.tsx         — status → tone + icon over the design-system <Badge/>
+    lib/format.tsx            — domain helpers (formatRoom, calculateLOS)
+
+storybook/                    — @prysm/design-system, generic primitives + Storybook
+  src/
+    Badge/ Button/ Card/ …    — folder-per-component (component + stories + test)
+    styles/theme.css          — semantic color tone tokens (@theme)
+    lib/toInitials.ts         — generic helper
 ```
+
+The design system ships only context-agnostic primitives (grouped in Storybook by
+function: Actions, Data Display, Feedback, Overlays, Keyboard) plus the color
+tones. Patient-specific components live in the app and compose those primitives.
 
 ## Notes
 
@@ -53,13 +66,13 @@ _This section was written after the timer; some code edits were also made post-t
 
 ### Next sprint, in order
 
-1. **Typed comparator map for sort — finish what status started.** `STATUS_RANK` now drives the status sort numerically — `Discharged` could land anywhere alphabetically and triage rank stays correct. Three more columns sit on the same `localeCompare` default and want the same treatment: Patient (currently sorts by first name because the stored value is "First Last", but clinical convention is last-name first), Age (string compare breaks at 100+), and Room (alphanumeric wants natural-order). One per-key `comparators[key]` lookup replaces the default in [compareBy](src/components/PatientCensus.tsx). *First because it's correctness, not polish.*
+1. **Typed comparator map for sort — finish what status started.** `STATUS_RANK` now drives the status sort numerically — `Discharged` could land anywhere alphabetically and triage rank stays correct. Three more columns sit on the same `localeCompare` default and want the same treatment: Patient (currently sorts by first name because the stored value is "First Last", but clinical convention is last-name first), Age (string compare breaks at 100+), and Room (alphanumeric wants natural-order). One per-key `comparators[key]` lookup replaces the default in [compareBy](app/src/components/PatientCensus.tsx). *First because it's correctness, not polish.*
 
-2. **ARIA grid pattern on the roster — roving tabindex + arrow keys.** Charge nurses drive this view keyboard-heavy across a full shift. Today every row is its own tab stop (Enter / Space opens), so traversing the table is N tab stops. Grid pattern collapses that to one tab stop with arrows moving between rows. *Second because it's working today — but the user the tool exists for is the one for whom "working" is the lowest bar.* — row implementation at [PatientCensus.tsx](src/components/PatientCensus.tsx) `tbody` map.
+2. **ARIA grid pattern on the roster — roving tabindex + arrow keys.** Charge nurses drive this view keyboard-heavy across a full shift. Today every row is its own tab stop (Enter / Space opens), so traversing the table is N tab stops. Grid pattern collapses that to one tab stop with arrows moving between rows. *Second because it's working today — but the user the tool exists for is the one for whom "working" is the lowest bar.* — row implementation at [PatientCensus.tsx](app/src/components/PatientCensus.tsx) `tbody` map.
 
 ### When this scales
 
-_Today: 8-patient fixture, in-memory. The hardening shipped (memoized `visiblePatients`, lifted `.toLowerCase()`) covers actual per-render cost. The items below are sited comments in [PatientCensus.tsx](src/components/PatientCensus.tsx) today — they become work when the data shape changes, not before. Listed in the order they typically arrive._
+_Today: 8-patient fixture, in-memory. The hardening shipped (memoized `visiblePatients`, lifted `.toLowerCase()`) covers actual per-render cost. The items below are sited comments in [PatientCensus.tsx](app/src/components/PatientCensus.tsx) today — they become work when the data shape changes, not before. Listed in the order they typically arrive._
 
 1. **Server-side sort + filter.** When patients live in a database, sort and filter move to the query (`ORDER BY`, `WHERE name ILIKE`, indexed sort columns). The comparator map becomes the API contract (`?sort=room:asc`). Client gets debounce + `AbortController` on the search input. *First because every other item assumes a round-trip exists.*
 
