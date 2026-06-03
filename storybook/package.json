@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./styles.css": "./src/styles/tokens.css"
+    "./styles.css": "./src/styles/tokens.css",
+    "./theme.css": "./src/styles/theme.css"
   },
   "scripts": {
     "dev": "storybook dev -p 6006 --no-open",
