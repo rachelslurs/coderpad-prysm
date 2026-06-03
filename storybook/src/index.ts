@@ -1,7 +1,9 @@
-// Public API of the @prysm/design-system package. Consumers (the app, other
-// packages) import everything from here, never from deep paths.
+// Public API of @prysm/design-system — generic, context-agnostic primitives
+// only. Domain-specific components live in the consuming app.
 
-export { default as StatusBadge } from "./components/StatusBadge";
-export { default as PatientDetail } from "./components/PatientDetail";
-export { formatRoom, toInitials, calculateLOS } from "./lib/format";
-export type { Patient, PatientStatus } from "./types";
+export { Badge } from "./Badge";
+export type { BadgeProps } from "./Badge";
+
+export { toInitials } from "./lib/toInitials";
+
+export type { Tone } from "./types";
