@@ -3,7 +3,7 @@ import PatientCensus from "./components/PatientCensus.tsx";
 
 function App() {
   return (
-    <div className="flex min-h-screen flex-col items-center bg-zinc-50 p-8">
+    <div className="flex h-screen flex-col overflow-hidden bg-slate-50 font-['Figtree'] text-slate-900">
       <PatientCensus />
     </div>
   )
