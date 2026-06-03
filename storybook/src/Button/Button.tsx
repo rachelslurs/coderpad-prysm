@@ -7,11 +7,11 @@ type Variant = "solid" | "outline" | "ghost";
 const BASE =
   "inline-flex items-center justify-center gap-1.5 rounded border transition-colors focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2";
 
-// `touch` is the bundle's mobile/gloved size: 48px min height, extra-bold.
+// `touch` is the bundle's mobile/gloved size: 48px min height.
 const SIZE = {
   sm: "px-2.5 py-1.5 text-sm font-semibold",
   md: "px-3 py-2 text-base font-semibold",
-  touch: "min-h-12 px-5 text-base font-extrabold",
+  touch: "min-h-12 px-5 text-base font-semibold",
 } as const;
 
 // Literal per-(variant, tone) class strings — Tailwind only generates whole
