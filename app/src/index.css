@@ -1,0 +1,7 @@
+@import url("https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap");
+@import "tailwindcss";
+
+/* The design-system components live in a sibling workspace package and are
+   consumed as source. Tailwind must scan them so the utility classes they use
+   are generated into the app's stylesheet. */
+@source "../../storybook/src";

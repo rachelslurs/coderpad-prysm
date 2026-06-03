@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { PATIENTS, type Patient } from "../../data/patients.ts";
+import { PATIENTS } from "../../data/patients.ts";
 import {
   Search,
   X,
@@ -8,9 +8,13 @@ import {
   ChevronUp,
   ChevronDown,
 } from "lucide-react";
-import StatusBadge from "./StatusBadge";
-import PatientDetail from "./PatientDetail";
-import { formatRoom, toInitials } from "./format";
+import {
+  StatusBadge,
+  PatientDetail,
+  formatRoom,
+  toInitials,
+  type Patient,
+} from "@prysm/design-system";
 
 // Numeric triage rank — `Discharged` could land anywhere alphabetically and
 // triage order stays correct.
@@ -48,6 +52,31 @@ const ROW_ACCENT: Record<Patient["status"], string> = {
   Critical: "shadow-[inset_4px_0_0_#f43f5e]",
   "Needs Attention": "shadow-[inset_4px_0_0_#f59e0b]",
   Stable: "",
+};
+
+// Stacked chevrons so both directions are always visible — the active one lights
+// teal, the other stays slate. Reads more clearly than a single arrow that swaps
+// in/out: the user can see which direction "more sort" would go. Hoisted to
+// module scope (not redefined per render) so it keeps a stable identity.
+const SortIcon = ({
+  active,
+  dir,
+}: {
+  active: boolean;
+  dir: "asc" | "desc";
+}) => {
+  const ascActive = active && dir === "asc";
+  const descActive = active && dir === "desc";
+  return (
+    <span aria-hidden="true" className="ml-1 inline-flex flex-col leading-none">
+      <ChevronUp
+        className={`h-4 w-4 ${ascActive ? "text-teal-800" : "text-slate-400"}`}
+      />
+      <ChevronDown
+        className={`-mt-1.5 h-4 w-4 ${descActive ? "text-teal-800" : "text-slate-400"}`}
+      />
+    </span>
+  );
 };
 
 export default function PatientCensus() {
@@ -116,16 +145,15 @@ export default function PatientCensus() {
     }
   }, [selectedPatient]);
 
-  // When the filter shrinks the visible set below the current active index,
-  // pull the active index back into range so a focusable row still exists.
-  useEffect(() => {
-    if (
-      visiblePatients.length > 0 &&
-      activeRowIndex >= visiblePatients.length
-    ) {
-      setActiveRowIndex(visiblePatients.length - 1);
-    }
-  }, [visiblePatients.length, activeRowIndex]);
+  // When the filter shrinks the visible set below the stored active index, fall
+  // back to the last visible row so exactly one row stays focusable (roving
+  // tabindex). Derived at render time rather than corrected via a setState in an
+  // effect — that would trigger a cascading re-render. The stored index can go
+  // stale after filtering; it self-heals on the next onFocus.
+  const activeIndex =
+    visiblePatients.length === 0
+      ? 0
+      : Math.min(activeRowIndex, visiblePatients.length - 1);
 
   // Arrow keys set shouldFocusActiveRow — after the render commits the new
   // tabIndex assignments, we move focus to the new active row. Click/tab-
@@ -173,29 +201,6 @@ export default function PatientCensus() {
         ? "ascending"
         : "descending"
       : "none";
-
-  // Stacked chevrons so both directions are always visible — the active one
-  // lights teal, the other stays slate. Reads more clearly than a single
-  // arrow that swaps in/out: the user can see which direction "more sort"
-  // would go.
-  const SortIcon = ({ columnKey }: { columnKey: keyof Patient }) => {
-    const isActive = sort.key === columnKey;
-    const ascActive = isActive && sort.dir === "asc";
-    const descActive = isActive && sort.dir === "desc";
-    return (
-      <span
-        aria-hidden="true"
-        className="ml-1 inline-flex flex-col leading-none"
-      >
-        <ChevronUp
-          className={`h-4 w-4 ${ascActive ? "text-teal-800" : "text-slate-400"}`}
-        />
-        <ChevronDown
-          className={`-mt-1.5 h-4 w-4 ${descActive ? "text-teal-800" : "text-slate-400"}`}
-        />
-      </span>
-    );
-  };
 
   const thBase =
     "bg-white px-6 py-4 text-left text-lg font-bold whitespace-nowrap transition-colors";
@@ -323,13 +328,13 @@ export default function PatientCensus() {
               <th {...sortableThProps("room")}>
                 <span className="flex w-full items-center justify-between gap-2">
                   <span>Room</span>
-                  <SortIcon columnKey="room" />
+                  <SortIcon active={sort.key === "room"} dir={sort.dir} />
                 </span>
               </th>
               <th {...sortableThProps("name")}>
                 <span className="flex w-full items-center justify-between gap-2">
                   <span>Patient</span>
-                  <SortIcon columnKey="name" />
+                  <SortIcon active={sort.key === "name"} dir={sort.dir} />
                 </span>
               </th>
               <th scope="col" className={thInactive}>
@@ -344,7 +349,7 @@ export default function PatientCensus() {
               <th {...sortableThProps("status")}>
                 <span className="flex w-full items-center justify-between gap-2">
                   <span>Status</span>
-                  <SortIcon columnKey="status" />
+                  <SortIcon active={sort.key === "status"} dir={sort.dir} />
                 </span>
               </th>
             </tr>
@@ -371,7 +376,7 @@ export default function PatientCensus() {
                 ref={(el) => {
                   rowRefs.current[i] = el;
                 }}
-                tabIndex={activeRowIndex === i ? 0 : -1}
+                tabIndex={activeIndex === i ? 0 : -1}
                 // Zebra striping for visual rhythm; active row (roving tabindex
                 // target) bumps a step darker than even rows so it still reads
                 // as distinct. Hover (teal-50) wins over both. transition-
@@ -379,7 +384,7 @@ export default function PatientCensus() {
                 // border between rows doesn't animate when sort reorders the
                 // DOM — border-color is part of transition-colors.
                 className={`group cursor-pointer transition-[background-color] hover:bg-teal-50 focus:outline-none focus-visible:bg-teal-100 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-teal-600 ${
-                  activeRowIndex === i
+                  activeIndex === i
                     ? "bg-teal-50"
                     : i % 2 === 1
                       ? "bg-slate-50"
