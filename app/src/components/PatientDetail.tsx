@@ -1,8 +1,9 @@
 import { useEffect, useRef } from "react";
-import type { Patient } from "../types";
+import type { Patient } from "../../data/patients";
 import { ArrowLeft, HandHeart, Stethoscope, Clock, Calendar, ShieldCheck } from "lucide-react";
+import { toInitials } from "@prysm/design-system";
 import StatusBadge from "./StatusBadge";
-import { formatRoom, toInitials, calculateLOS } from "../lib/format";
+import { formatRoom, calculateLOS } from "../lib/format";
 
 type PatientDetailProps = {
   patient: Patient;

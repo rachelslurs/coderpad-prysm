@@ -1,5 +1,6 @@
-// Small UI helpers shared by PatientCensus (roster row) and PatientDetail (panel hero).
-// Returns JSX in formatRoom's case, so the file is .tsx.
+// Domain formatting helpers for the patient roster (room number, length of
+// stay). Returns JSX in formatRoom's case, so the file is .tsx. The generic
+// `toInitials` lives in @prysm/design-system.
 
 // "101A" → bold digits + lighter suffix. Room number is the scan target; the wing
 // letter is supporting detail.
@@ -14,13 +15,6 @@ export const formatRoom = (room: string) => {
     </>
   );
 };
-
-export const toInitials = (name: string) =>
-  name
-    .split(/\s+/)
-    .filter(Boolean)
-    .map((part) => part[0]!.toUpperCase())
-    .join("");
 
 // Length-of-stay derived from today. The fixture's 2024 admit dates yield large
 // counts in 2026 — magnitude isn't the point, the "Day N" cue is. In a real

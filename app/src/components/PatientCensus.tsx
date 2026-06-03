@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { PATIENTS } from "../../data/patients.ts";
+import { PATIENTS, type Patient } from "../../data/patients.ts";
 import {
   Search,
   X,
@@ -8,13 +8,10 @@ import {
   ChevronUp,
   ChevronDown,
 } from "lucide-react";
-import {
-  StatusBadge,
-  PatientDetail,
-  formatRoom,
-  toInitials,
-  type Patient,
-} from "@prysm/design-system";
+import { toInitials } from "@prysm/design-system";
+import StatusBadge from "./StatusBadge";
+import PatientDetail from "./PatientDetail";
+import { formatRoom } from "../lib/format";
 
 // Numeric triage rank — `Discharged` could land anywhere alphabetically and
 // triage order stays correct.

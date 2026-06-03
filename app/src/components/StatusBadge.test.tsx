@@ -1,9 +1,9 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
 import StatusBadge from "./StatusBadge";
-import type { PatientStatus } from "../types";
+import type { Patient } from "../../data/patients";
 
-const STATUSES: PatientStatus[] = ["Stable", "Needs Attention", "Critical"];
+const STATUSES: Patient["status"][] = ["Stable", "Needs Attention", "Critical"];
 
 describe("StatusBadge", () => {
   it.each(STATUSES)("renders the %s label", (status) => {
