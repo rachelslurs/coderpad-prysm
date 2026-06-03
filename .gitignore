@@ -10,6 +10,8 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+storybook-static
+.turbo
 *.local
 
 # Editor directories and files
@@ -23,3 +25,6 @@ dist-ssr
 *.sln
 *.sw?
 .claude/*
+
+# Local Pages-assembly output (mirrors the CI deploy step)
+_site
