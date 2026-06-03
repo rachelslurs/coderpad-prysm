@@ -1,4 +1,4 @@
-import type { Patient } from "../../data/patients";
+import type { PatientStatus } from "../types";
 import { AlertOctagon, AlertTriangle, CheckCircle, type LucideIcon } from "lucide-react";
 
 // Three-tier triage encoding. Each variant exposes `group-hover:*` hooks so a
@@ -8,7 +8,7 @@ import { AlertOctagon, AlertTriangle, CheckCircle, type LucideIcon } from "lucid
 const BASE =
   "inline-flex items-center gap-1.5 whitespace-nowrap rounded border px-2.5 py-1 text-base font-medium transition-all";
 
-const STATUS_VARIANT: Record<Patient["status"], string> = {
+const STATUS_VARIANT: Record<PatientStatus, string> = {
   Critical:
     "border-rose-200 bg-rose-50 text-rose-900 " +
     "group-hover:border-rose-400 group-hover:bg-rose-100 group-hover:ring-1 group-hover:ring-rose-400",
@@ -20,14 +20,14 @@ const STATUS_VARIANT: Record<Patient["status"], string> = {
     "group-hover:border-slate-400 group-hover:bg-slate-100 group-hover:ring-1 group-hover:ring-slate-400",
 };
 
-const STATUS_ICON: Record<Patient["status"], LucideIcon> = {
+const STATUS_ICON: Record<PatientStatus, LucideIcon> = {
   Critical: AlertOctagon,
   "Needs Attention": AlertTriangle,
   Stable: CheckCircle,
 };
 
 type StatusBadgeProps = {
-  status: Patient["status"];
+  status: PatientStatus;
 };
 
 export default function StatusBadge({ status }: StatusBadgeProps) {
