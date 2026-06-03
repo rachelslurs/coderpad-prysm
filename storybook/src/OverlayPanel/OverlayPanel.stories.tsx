@@ -9,7 +9,7 @@ const meta = {
   tags: ["autodocs"],
   args: {
     onClose: () => {},
-    className: "bg-slate-50",
+    className: "bg-neutral-50",
     children: (
       <div className="space-y-4 p-6">
         <Button variant="ghost">Close</Button>

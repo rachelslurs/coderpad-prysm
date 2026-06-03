@@ -160,7 +160,7 @@ export default function PatientCensus() {
 
   return (
     <>
-      <header className="grid flex-none grid-cols-[1fr_auto] items-center gap-4 border-b border-slate-800 bg-slate-900 px-6 py-4 shadow-md md:grid-cols-3">
+      <header className="grid flex-none grid-cols-[1fr_auto] items-center gap-4 border-b border-neutral-800 bg-neutral-900 px-6 py-4 shadow-md md:grid-cols-3">
         <h1 className="hidden items-baseline gap-2 whitespace-nowrap text-xl font-semibold tracking-normal text-white/90 md:inline-flex">
           1 North Census
         </h1>
@@ -168,7 +168,7 @@ export default function PatientCensus() {
         <div className="group relative justify-self-start md:justify-self-center">
             <Search
               aria-hidden="true"
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-slate-200"
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400 transition-colors group-focus-within:text-neutral-200"
             />
             <input
               ref={searchInputRef}
@@ -193,14 +193,14 @@ export default function PatientCensus() {
                 }
               }}
               onBlur={() => setSearchFocused(false)}
-              className="w-80 rounded border border-slate-700 bg-slate-800 py-2 pl-10 pr-9 text-base text-slate-100 placeholder:text-slate-400 focus:border-slate-400 focus:bg-slate-950 focus:text-white focus:outline-none focus:ring-2 focus:ring-slate-500"
+              className="w-80 rounded border border-neutral-700 bg-neutral-800 py-2 pl-10 pr-9 text-base text-neutral-100 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-neutral-950 focus:text-white focus:outline-none focus:ring-2 focus:ring-neutral-500"
             />
             {searchQuery ? (
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
                 aria-label="Clear search"
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded text-slate-400 hover:text-slate-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded text-neutral-400 hover:text-neutral-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -208,7 +208,7 @@ export default function PatientCensus() {
               !searchFocused && (
                 <kbd
                   aria-hidden="true"
-                  className="pointer-events-none absolute right-2 top-1/2 hidden -translate-y-1/2 select-none rounded border border-slate-700 bg-slate-800/80 px-1.5 py-0.5 font-mono text-xs font-bold tracking-widest text-slate-400 sm:inline-block"
+                  className="pointer-events-none absolute right-2 top-1/2 hidden -translate-y-1/2 select-none rounded border border-neutral-700 bg-neutral-800/80 px-1.5 py-0.5 font-mono text-xs font-bold tracking-widest text-neutral-400 sm:inline-block"
                 >
                   /
                 </kbd>
@@ -224,7 +224,7 @@ export default function PatientCensus() {
           className={`inline-flex min-h-[42px] items-center gap-2 justify-self-end whitespace-nowrap rounded border px-3 py-2 text-base font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 ${
             hideNames
               ? "border-teal-500 bg-teal-400 text-white hover:bg-teal-400"
-              : "border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700"
+              : "border-neutral-700 bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
           }`}
         >
           {hideNames ? (
@@ -243,7 +243,7 @@ export default function PatientCensus() {
         {/* table-fixed + colgroup locks column widths so filtered or empty
             results don't reflow the layout. Diagnosis is the only flexible
             column — it absorbs leftover width. */}
-        <table className="w-full table-fixed border-collapse text-lg text-slate-900">
+        <table className="w-full table-fixed border-collapse text-lg text-neutral-900">
           <colgroup>
             <col className="w-32" />
             <col className="w-60" />
@@ -286,7 +286,7 @@ export default function PatientCensus() {
               to role="grid" divs, since virtualizing a real <table> fights the
               native sticky <thead> above, and grid divs pair naturally with
               the full ARIA grid pattern in README "Next sprint". */}
-          <tbody className="divide-y divide-slate-100 bg-white">
+          <tbody className="divide-y divide-neutral-100 bg-white">
             {/* Inlined row render with fresh closures per render. At this size
                 the closure churn and lack of row-level memoization are
                 unmeasurable. When row count crosses ~100, extract <PatientRow
@@ -313,7 +313,7 @@ export default function PatientCensus() {
                   activeIndex === i
                     ? "bg-teal-50"
                     : i % 2 === 1
-                      ? "bg-slate-50"
+                      ? "bg-neutral-50"
                       : ""
                 }`}
                 onClick={(e) => openPanel(patient, e)}
@@ -345,20 +345,20 @@ export default function PatientCensus() {
                 }}
               >
                 <td
-                  className={`px-6 py-3.5 align-middle text-base text-slate-600 ${ROW_ACCENT[patient.status]}`}
+                  className={`px-6 py-3.5 align-middle text-base text-neutral-600 ${ROW_ACCENT[patient.status]}`}
                 >
                   {formatRoom(patient.room)}
                 </td>
-                <td className="px-6 py-3.5 align-middle text-xl font-extrabold leading-tight text-slate-900">
+                <td className="px-6 py-3.5 align-middle text-xl font-extrabold leading-tight text-neutral-900">
                   {hideNames ? toInitials(patient.name) : patient.name}
                 </td>
-                <td className="px-6 py-3.5 align-middle text-base tabular-nums text-slate-600">
+                <td className="px-6 py-3.5 align-middle text-base tabular-nums text-neutral-600">
                   {patient.age}
                 </td>
-                <td className="px-6 py-3.5 align-middle text-slate-600">
+                <td className="px-6 py-3.5 align-middle text-neutral-600">
                   {patient.physician}
                 </td>
-                <td className="px-6 py-3.5 align-middle text-slate-600">
+                <td className="px-6 py-3.5 align-middle text-neutral-600">
                   {patient.diagnosis}
                 </td>
                 <td className="px-6 py-3.5 align-middle">
