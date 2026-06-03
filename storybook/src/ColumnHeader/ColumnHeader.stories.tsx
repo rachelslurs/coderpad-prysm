@@ -10,7 +10,9 @@ const meta = {
     (Story) => (
       <table className="border-collapse">
         <thead>
-          <tr>{Story()}</tr>
+          <tr>
+            <Story />
+          </tr>
         </thead>
       </table>
     ),
