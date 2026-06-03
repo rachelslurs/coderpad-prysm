@@ -1,15 +1,18 @@
-# Pull-request gate: lint, test, and build both workspaces via Turborepo.
+# Pull-request gate. Each job is an independent status check (CI / lint,
+# CI / test, CI / build) so a test failure is visible on its own.
 name: CI
 
 on:
   pull_request:
+  push:
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  verify:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -25,7 +28,37 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Lint
         run: pnpm lint
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
       - name: Test
         run: pnpm test
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
       - name: Build
         run: pnpm build
