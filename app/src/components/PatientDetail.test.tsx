@@ -1,7 +1,10 @@
 import { render, screen, fireEvent, within } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import PatientDetail from "./PatientDetail";
-import { samplePatient } from "../lib/samplePatient";
+import { PATIENTS } from "../../data/patients";
+
+// Margaret Holloway — initials "MH".
+const samplePatient = PATIENTS[0];
 
 describe("PatientDetail", () => {
   it("renders the patient's clinical, care, and admin details", () => {
