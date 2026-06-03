@@ -26,3 +26,13 @@ export const StepOnly: Story = {
     return <Stepper {...args} mode="step" value={v} onChange={setV} />;
   },
 };
+
+// Tight-range vital: starts unset ("Not set"); first +/− — or "Use last" —
+// seeds from the previous reading.
+export const UnsetWithSeed: Story = {
+  args: { label: "Temperature", minValue: 95, maxValue: 105, step: 0.1, unit: "°F" },
+  render: (args) => {
+    const [v, setV] = useState<number | null>(null);
+    return <Stepper {...args} mode="step" seed={98.4} value={v} onChange={setV} />;
+  },
+};
