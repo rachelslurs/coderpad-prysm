@@ -24,6 +24,8 @@ export { SortIndicator } from "./SortIndicator";
 export type { SortIndicatorProps } from "./SortIndicator";
 export { ColumnHeader } from "./ColumnHeader";
 export type { ColumnHeaderProps, SortDirection } from "./ColumnHeader";
+export { TaskProgress } from "./TaskProgress";
+export type { TaskProgressProps } from "./TaskProgress";
 
 // Feedback
 export { EmptyState } from "./EmptyState";
@@ -34,6 +36,14 @@ export type { SkeletonProps } from "./Skeleton";
 // Overlays
 export { OverlayPanel } from "./OverlayPanel";
 export type { OverlayPanelProps } from "./OverlayPanel";
+
+// Forms (structured inputs — react-aria-components)
+export { Toggle } from "./Toggle";
+export type { ToggleProps } from "./Toggle";
+export { Segmented } from "./Segmented";
+export type { SegmentedProps } from "./Segmented";
+export { Stepper } from "./Stepper";
+export type { StepperProps } from "./Stepper";
 
 // Keyboard
 export { Kbd } from "./Kbd";
