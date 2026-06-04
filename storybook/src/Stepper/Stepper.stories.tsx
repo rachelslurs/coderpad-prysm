@@ -18,7 +18,7 @@ const meta = {
           "",
           "**When to use:** any numeric value — vitals, counts, pain 0–10.",
           "",
-          "**When not to use:** for one-of-N labels use **Segmented**; for binary use **Toggle**. There is deliberately **no freeform text input** in this system — numbers go through Stepper.",
+          "**When not to use:** for one-of-N labels use **Segmented**; for binary use **Toggle**. Prefer Stepper over a freeform text field for numbers — it clamps, rounds, and keeps values comparable.",
         ].join("\n"),
       },
     },

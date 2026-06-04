@@ -32,34 +32,28 @@ in its own Docs page.
 
 ---
 
-## Structured input only — the deliberate form-control gaps
+## Prefer structured input
 
-> **There is no freeform text `Input`, `Textarea`, `Select`/dropdown, or
-> multi-select control in this system, by design.** Don't go looking for one — it
-> isn't undocumented, it's intentionally absent.
+Where the data is structured — numeric or a predefined selection — reach for the
+structured control rather than a freeform field. The product captures clinical data
+(vitals, ADLs, meal intake) that must stay clean, comparable, and fast to enter
+mid-task, so a constrained control beats a text box for those values:
 
-Every input is **structured** — numeric or a predefined selection — because the
-product captures clinical data (vitals, ADLs, meal intake) that must stay clean,
-comparable, and fast to enter mid-task. Reach for the structured control that fits:
-
-| You need to capture… | Use | Not |
+| You need to capture… | Use | Prefer over |
 |---|---|---|
-| A number (vital, count, 0–10 scale) | **Stepper** | a text input |
+| A number (vital, count, 0–10 scale) | **Stepper** | a freeform text field |
 | Exactly one of a small fixed set | **Segmented** | a `Select` dropdown |
 | A binary on/off state | **Toggle** | a checkbox-as-text |
-| Several independent on/off states | **several Toggles** | a multi-select |
-| Free prose | *(nothing — out of scope)* | a `Textarea` |
 
-If a future requirement genuinely needs freeform text, it's a new component with its
-own validation story — not an oversight to paper over with a raw `<input>`.
+**Remaining deliberate gap:** there is no dedicated **multi-select** control — for
+several independent on/off states, compose multiple **Toggle**s (one per option).
 
 ---
 
 ## The catalog at a glance
 
 - **Actions** — **Button** (the only interactive action primitive).
-- **Forms** (all structured) — **Segmented** (one-of-N), **Toggle** (binary),
-  **Stepper** (numeric).
+- **Forms** — **Segmented** (one-of-N), **Toggle** (binary), **Stepper** (numeric).
 - **Data Display** — **Badge**, **Card**, **Section**, **Field**, **IconField**,
   **IconTile**, **Avatar**, **TaskProgress**, **ColumnHeader**, **SortIndicator**.
 - **Feedback** — **Skeleton** (loading), **EmptyState** (no results).
