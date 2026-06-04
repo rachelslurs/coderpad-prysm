@@ -1,4 +1,4 @@
-import type { KeyboardEvent } from "react";
+import { useState, type KeyboardEvent } from "react";
 import { NumberField, Group, Input, Button } from "react-aria-components";
 import { Minus, Plus, History } from "lucide-react";
 
@@ -40,7 +40,44 @@ const GROUP =
 // - mode="input": react-aria-components NumberField (textbox, clamps/rounds/locale).
 // - mode="step": a custom spinbutton — step-only, with an unset state ("Not set"
 //   until touched) and a `seed` (the last reading) that the first +/− jumps to.
-export default function Stepper({
+export default function Stepper(props: StepperProps) {
+  // Step mode lives in its own component so its state hook is unconditional
+  // (the input branch returns before any hook).
+  if (props.mode === "step") return <StepSpinner {...props} />;
+
+  const { value, defaultValue, onChange, minValue, maxValue, step = 1, unit, label } = props;
+  return (
+    <NumberField
+      value={value ?? undefined}
+      defaultValue={defaultValue}
+      onChange={onChange}
+      minValue={minValue}
+      maxValue={maxValue}
+      step={step}
+      aria-label={label}
+      className="inline-flex items-center"
+    >
+      <Group className={GROUP}>
+        <Button slot="decrement" className={BTN}>
+          <Minus className="h-[22px] w-[22px]" aria-hidden="true" />
+        </Button>
+        <Input className={INPUT} />
+        <Button slot="increment" className={BTN}>
+          <Plus className="h-[22px] w-[22px]" aria-hidden="true" />
+        </Button>
+      </Group>
+      {unit != null && (
+        <span className="ml-2 text-sm font-bold text-neutral-500">{unit}</span>
+      )}
+    </NumberField>
+  );
+}
+
+// ── step-only spinbutton ──────────────────────────────────────────────────
+// Controlled when `value` is passed; otherwise manages its own state (seeded
+// from `defaultValue`, else "Not set"), so +/−, the keyboard, and "Use last"
+// work even without an onChange handler.
+function StepSpinner({
   value,
   defaultValue,
   onChange,
@@ -48,53 +85,30 @@ export default function Stepper({
   maxValue,
   step = 1,
   unit,
-  mode = "input",
   seed,
   label,
 }: StepperProps) {
-  if (mode === "input") {
-    return (
-      <NumberField
-        value={value ?? undefined}
-        defaultValue={defaultValue}
-        onChange={onChange}
-        minValue={minValue}
-        maxValue={maxValue}
-        step={step}
-        aria-label={label}
-        className="inline-flex items-center"
-      >
-        <Group className={GROUP}>
-          <Button slot="decrement" className={BTN}>
-            <Minus className="h-[22px] w-[22px]" aria-hidden="true" />
-          </Button>
-          <Input className={INPUT} />
-          <Button slot="increment" className={BTN}>
-            <Plus className="h-[22px] w-[22px]" aria-hidden="true" />
-          </Button>
-        </Group>
-        {unit != null && (
-          <span className="ml-2 text-sm font-bold text-neutral-500">{unit}</span>
-        )}
-      </NumberField>
-    );
-  }
-
-  // ── step-only spinbutton ────────────────────────────────────────────────
-  const isSet = value != null && !Number.isNaN(value);
+  const [internal, setInternal] = useState<number | null>(defaultValue ?? null);
+  const isControlled = value !== undefined;
+  const current = isControlled ? value : internal;
+  const isSet = current != null && !Number.isNaN(current);
   const min = minValue ?? -Infinity;
   const max = maxValue ?? Infinity;
   const roundToStep = (v: number) => {
     const inv = 1 / step;
     return Math.round(v * inv) / inv;
   };
-  const commit = (v: number) => onChange?.(Math.min(max, Math.max(min, roundToStep(v))));
+  const commit = (v: number) => {
+    const next = Math.min(max, Math.max(min, roundToStep(v)));
+    if (!isControlled) setInternal(next);
+    onChange?.(next);
+  };
   // First press jumps to the last reading (or the min / 0); then it steps from there.
   const seedValue = seed ?? (min === -Infinity ? 0 : min);
   const onStep = (dir: 1 | -1) =>
-    isSet ? commit((value as number) + dir * step) : commit(seedValue);
-  const atMin = isSet && (value as number) <= min;
-  const atMax = isSet && (value as number) >= max;
+    isSet ? commit((current as number) + dir * step) : commit(seedValue);
+  const atMin = isSet && (current as number) <= min;
+  const atMax = isSet && (current as number) >= max;
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     switch (e.key) {
@@ -135,8 +149,8 @@ export default function Stepper({
           aria-label={label}
           aria-valuemin={minValue}
           aria-valuemax={maxValue}
-          aria-valuenow={isSet ? (value as number) : undefined}
-          aria-valuetext={isSet ? `${value}${unit ?? ""}` : "Not set"}
+          aria-valuenow={isSet ? (current as number) : undefined}
+          aria-valuetext={isSet ? `${current}${unit ?? ""}` : "Not set"}
           onKeyDown={onKeyDown}
           className={`flex h-[52px] min-w-[92px] items-center justify-center px-2 text-center tabular-nums outline-none focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-accent-600/35 ${
             isSet
@@ -144,7 +158,7 @@ export default function Stepper({
               : "text-base font-bold text-neutral-400"
           }`}
         >
-          {isSet ? value : "Not set"}
+          {isSet ? current : "Not set"}
         </div>
         <Button isDisabled={atMax} onPress={() => onStep(1)} aria-label="increase" className={BTN}>
           <Plus className="h-[22px] w-[22px]" aria-hidden="true" />

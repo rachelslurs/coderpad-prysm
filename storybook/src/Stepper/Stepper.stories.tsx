@@ -60,3 +60,19 @@ export const UnsetWithSeed: Story = {
     return <Stepper {...args} mode="step" seed={98.4} value={v} onChange={setV} />;
   },
 };
+
+// Uncontrolled step mode: no value/onChange — it manages its own state, so +/−,
+// the keyboard, and "Use last" work standalone. This is what FormField's stories
+// render, and what makes the documented `defaultValue` / uncontrolled use work.
+export const Uncontrolled: Story = {
+  args: { label: "Heart rate", minValue: 30, maxValue: 220, step: 1, unit: "bpm" },
+  render: (args) => <Stepper {...args} mode="step" seed={72} />,
+  play: async ({ canvas, userEvent }) => {
+    const spin = canvas.getByRole("spinbutton", { name: "Heart rate" });
+    await expect(spin).toHaveAttribute("aria-valuetext", "Not set");
+    await userEvent.click(canvas.getByRole("button", { name: /use last/i }));
+    await expect(spin).toHaveAttribute("aria-valuenow", "72");
+    await userEvent.click(canvas.getByRole("button", { name: /increase/i }));
+    await expect(spin).toHaveAttribute("aria-valuenow", "73");
+  },
+};
