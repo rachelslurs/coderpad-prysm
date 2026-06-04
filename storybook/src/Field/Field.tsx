@@ -6,9 +6,12 @@ const VALUE = {
 } as const;
 
 export type FieldProps = {
+  /** Small muted label shown above the value (e.g. "Attending Physician"). */
   label: ReactNode;
-  /** Value emphasis. "lg" for a hero value (e.g. a primary heading). */
+  /** Value emphasis. `md` (default) or `lg` for a hero value (a primary
+   *  heading-scale value, e.g. the lead diagnosis). */
   size?: keyof typeof VALUE;
+  /** The value — bold, rendered beneath the label. */
   children: ReactNode;
 };
 

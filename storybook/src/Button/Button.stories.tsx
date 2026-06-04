@@ -7,6 +7,23 @@ const meta = {
   title: "Actions/Button",
   component: Button,
   tags: ["autodocs"],
+  parameters: {
+    docs: {
+      description: {
+        component: [
+          "The action control — one per action cluster, in three emphasis levels (`variant`) and six semantic `tone`s.",
+          "",
+          "**When to use:** any click/tap that *performs an action* — submit, open, navigate, mark complete.",
+          "",
+          "**When not to use:** for a labelled, non-interactive status or count, use **Badge**; for a binary on/off setting, use **Toggle**; for picking one option from a small fixed set, use **Segmented**.",
+          "",
+          "**Emphasis (`variant`):** `solid` = the one main action · `outline` = a lower-emphasis action beside a solid one (Cancel, Save for later) · `ghost` = tertiary / low-stakes (Skip, Back).",
+          "",
+          "**Size:** `md` (default) and `sm` for dense desktop toolbars; `touch` is the **48px** min-height mobile/gloved-hand target — use it for primary actions on touch surfaces.",
+        ].join("\n"),
+      },
+    },
+  },
   argTypes: {
     variant: { control: "inline-radio", options: ["solid", "outline", "ghost"] },
     tone: {

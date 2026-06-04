@@ -4,11 +4,14 @@ import { SortIndicator } from "../SortIndicator";
 export type SortDirection = "asc" | "desc";
 
 export type ColumnHeaderProps = {
+  /** Header label. */
   children: ReactNode;
   /** Provide to make the column sortable — also wires keyboard + aria-sort. */
   onSort?: () => void;
   /** Whether this column is the active sort (only meaningful when sortable). */
   active?: boolean;
+  /** Active sort direction (only meaningful when `active`). Sets `aria-sort` and
+   *  the SortIndicator. Defaults to `asc`. */
   direction?: SortDirection;
   className?: string;
 };

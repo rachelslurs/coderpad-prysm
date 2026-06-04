@@ -50,8 +50,11 @@ export type BadgeProps = {
   size?: keyof typeof SIZE;
   /** Optional leading icon (inherits the label color via `currentColor`). */
   icon?: LucideIcon;
-  /** Deepen on ancestor `.group` hover. */
+  /** Deepen on ancestor `.group` hover (e.g. a table row). This is a *visual*
+   *  affordance only — it does not make the Badge clickable. For a clickable
+   *  chip, use Button (`variant="outline"`/`"ghost"`). */
   interactive?: boolean;
+  /** The label — carries the meaning even without color (redundant encoding). */
   children: ReactNode;
 };
 

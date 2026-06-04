@@ -7,6 +7,22 @@ const meta = {
   title: "Forms/Stepper",
   component: Stepper,
   tags: ["autodocs"],
+  parameters: {
+    docs: {
+      description: {
+        component: [
+          "Structured numeric input — **never freeform**. Two modes share the +/− stepper frame:",
+          "",
+          '- `mode="input"` — typed **or** stepped (react-aria `NumberField`: clamps, rounds, locale-aware).',
+          '- `mode="step"` — step-only spinbutton; supports an unset state ("Not set" until touched) and a `seed` (the last reading) the first +/− jumps to.',
+          "",
+          "**When to use:** any numeric value — vitals, counts, pain 0–10.",
+          "",
+          "**When not to use:** for one-of-N labels use **Segmented**; for binary use **Toggle**. There is deliberately **no freeform text input** in this system — numbers go through Stepper.",
+        ].join("\n"),
+      },
+    },
+  },
   args: { label: "Temperature", minValue: 95, maxValue: 105, step: 0.1, unit: "°F" },
 } satisfies Meta<typeof Stepper>;
 

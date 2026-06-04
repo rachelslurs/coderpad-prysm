@@ -5,13 +5,21 @@ import { Check } from "lucide-react";
 type Option = string | { value: string; label: ReactNode };
 
 export type SegmentedProps = {
+  /** The choices. A bare string is both value and label; pass
+   *  `{ value, label }` when they differ. */
   options: Option[];
+  /** Selected value (controlled). Exactly one option is selected at a time. */
   value?: string;
+  /** Initial selected value (uncontrolled). */
   defaultValue?: string;
+  /** Fires with the newly-selected value. Selecting one option deselects the
+   *  previous — this is single-select. */
   onChange?: (value: string) => void;
-  /** "segmented" (thumb) or "picker" (wrapped chips). */
+  /** Skin (both are single-select): `segmented` = compact thumb track for 2–4
+   *  short options; `picker` = wrapped chips with a check badge, for longer or
+   *  more numerous options. */
   variant?: "segmented" | "picker";
-  /** Accessible group name. */
+  /** Accessible group name (required — labels the radio group). */
   label: string;
 };
 
