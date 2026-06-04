@@ -63,14 +63,16 @@ function ShiftFlow() {
             </span>
           }
         >
-          <ResidentSearch
-            onSelect={(p) => openPatient(p.id)}
-            assignedIds={assignedIds}
-            onShortcut={() => {
-              setView("assignment");
-              setSelectedId(null);
-            }}
-          />
+          <div className="ml-auto w-full max-w-sm">
+            <ResidentSearch
+              onSelect={(p) => openPatient(p.id)}
+              assignedIds={assignedIds}
+              onShortcut={() => {
+                setView("assignment");
+                setSelectedId(null);
+              }}
+            />
+          </div>
         </AppBar>
         <div className="min-h-0 flex-1">
           {view === "batch" ? (
