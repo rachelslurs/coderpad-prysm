@@ -92,10 +92,10 @@ export const Roster: Story = {
 // Non-person entities. The `avatar` slot takes a tinted `IconTile` instead of an
 // `Avatar` — the case where IconField can't help, because the title/subtitle
 // live in EntityRow's own slots, not in an icon · label · value pair.
-const UNITS: { name: string; meta: string; icon: LucideIcon; tone: Tone; occupied: number; beds: number }[] = [
-  { name: "Cardiology", meta: "Telemetry · 3rd floor", icon: HeartPulse, tone: "danger", occupied: 9, beds: 14 },
-  { name: "Imaging Suite", meta: "CT · MRI · X-ray", icon: Microscope, tone: "info", occupied: 4, beds: 6 },
-  { name: "Pharmacy", meta: "Inpatient dispensing", icon: Pill, tone: "success", occupied: 12, beds: 12 },
+const UNITS: { name: string; meta: string; icon: LucideIcon; tone: Tone }[] = [
+  { name: "Cardiology", meta: "Telemetry · 3rd floor", icon: HeartPulse, tone: "danger" },
+  { name: "Imaging Suite", meta: "CT · MRI · X-ray", icon: Microscope, tone: "info" },
+  { name: "Pharmacy", meta: "Inpatient dispensing", icon: Pill, tone: "success" },
 ];
 
 export const NonPersonEntities: Story = {
@@ -103,7 +103,7 @@ export const NonPersonEntities: Story = {
     docs: {
       description: {
         story:
-          "Departments, not people. The leading visual is a tinted `IconTile` in the `avatar` slot — a standalone chip with no label/value of its own.",
+          "Departments, not people. The leading visual is a tinted `IconTile` in the `avatar` slot — a standalone chip with no label/value of its own. No trailing slot here.",
       },
     },
   },
@@ -115,7 +115,6 @@ export const NonPersonEntities: Story = {
           title={u.name}
           subtitle={u.meta}
           avatar={<IconTile icon={u.icon} tone={u.tone} />}
-          trailing={count(u.occupied, u.beds)}
           onPress={() => {}}
         />
       ))}
