@@ -134,7 +134,7 @@ function BatchRow({
           Room {formatRoom(patient.room)}
           {off && (
             <Badge tone="neutral" size="sm">
-              Off
+              Covering
             </Badge>
           )}
         </div>
