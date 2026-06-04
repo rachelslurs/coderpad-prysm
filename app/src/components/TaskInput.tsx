@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Segmented, Stepper } from "@prysm/design-system";
+import { Button, Card, OverlayPanel, Segmented, Select, Stepper } from "@prysm/design-system";
 import { Check, History } from "lucide-react";
 import type { DocTask, LogEntry } from "../../data/careTasks";
 import { formatClock } from "../state/shiftContext";
@@ -9,7 +9,12 @@ type TaskInputProps = {
   /** The latest logged entry for this resident's task, if any. */
   entry?: LogEntry;
   onLog: (value: string) => void;
+  /** Strike out the current entry (correction). Omit to hide the affordance. */
+  onStrike?: (reason: string) => void;
 };
+
+// Strike-out reasons — structured, not freeform.
+const STRIKE_REASONS = ["Data-entry error", "Wrong resident or chart", "Updated assessment", "Other"];
 
 // A "Logged HH:MM · value" chip shown once a task has an entry.
 function LoggedChip({ entry }: { entry: LogEntry }) {
@@ -40,7 +45,7 @@ function Reference({ last, normal }: { last: string; normal: string }) {
 
 // One structured documentation input — segmented choices, vitals steppers, or
 // fixed meal items. No freeform text. Records a timestamped entry on log.
-export default function TaskInput({ task, entry, onLog }: TaskInputProps) {
+export default function TaskInput({ task, entry, onLog, onStrike }: TaskInputProps) {
   // Choice / meal seed their control from the last entry; vitals re-enter fresh.
   const seeded =
     task.kind === "choice" && entry && task.options.includes(entry.value)
@@ -50,13 +55,73 @@ export default function TaskInput({ task, entry, onLog }: TaskInputProps) {
         : "";
   const [choice, setChoice] = useState(seeded);
   const [vitals, setVitals] = useState<Record<string, number | null>>({});
+  const [striking, setStriking] = useState(false);
+  const [strikeReason, setStrikeReason] = useState("");
 
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-base font-extrabold text-neutral-900">{task.label}</h3>
-        {entry && <LoggedChip entry={entry} />}
+        {entry && (
+          <div className="flex items-center gap-2">
+            <LoggedChip entry={entry} />
+            {onStrike && (
+              <button
+                type="button"
+                onClick={() => setStriking(true)}
+                className="rounded text-xs font-bold text-accent-700 underline-offset-2 hover:underline focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-600"
+              >
+                Correct
+              </button>
+            )}
+          </div>
+        )}
       </div>
+
+      {striking && (
+        <OverlayPanel
+          onClose={() => setStriking(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Correct this entry"
+          className="items-center justify-center bg-neutral-950/50 p-6 backdrop-blur-sm"
+        >
+          <Card className="w-full max-w-md">
+            <h2 className="text-xl font-extrabold text-neutral-900">Correct this entry</h2>
+            <p className="mt-1 text-sm text-neutral-600">
+              No deletes — the original stays on the record with a line through it. Choose a reason, then log
+              the corrected value.
+            </p>
+            <div className="mt-4">
+              <Select
+                label="Reason"
+                placeholder="Choose a reason…"
+                options={STRIKE_REASONS}
+                selectedKey={strikeReason || undefined}
+                onSelectionChange={(k) => setStrikeReason(String(k))}
+              />
+            </div>
+            <div className="mt-5 flex justify-end gap-2">
+              <Button variant="ghost" tone="neutral" onClick={() => setStriking(false)}>
+                Cancel
+              </Button>
+              <Button
+                tone="danger"
+                disabled={!strikeReason}
+                onClick={() => {
+                  onStrike?.(strikeReason);
+                  setStriking(false);
+                  setStrikeReason("");
+                  setChoice("");
+                  setVitals({});
+                }}
+              >
+                Strike out
+              </Button>
+            </div>
+          </Card>
+        </OverlayPanel>
+      )}
 
       {task.kind === "vitals" && (
         <>
