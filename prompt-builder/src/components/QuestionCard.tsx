@@ -1,4 +1,4 @@
-import { Badge, Button, FormField, Segmented, Select, TextInput } from "@prysm/design-system";
+import { Badge, Button, FormField, Segmented, Select, TextInput, Toggle } from "@prysm/design-system";
 import { Check, X } from "lucide-react";
 import { URGENT_OPTIONS, type Answers, type Question } from "../answers";
 
@@ -58,6 +58,14 @@ function Control({ q, answers, update, setField }: Pick<Props, "q" | "answers" |
   if (q.kind === "multi") {
     return <MultiSelect value={answers.urgentCriteria} update={update} />;
   }
+  if (q.kind === "toggle") {
+    const on = Boolean(answers[q.id]);
+    return (
+      <Toggle isSelected={on} onChange={(v) => setField(q.id, v)}>
+        {on ? "Included" : "Skip (toggle to include)"}
+      </Toggle>
+    );
+  }
   if (q.kind === "text") {
     return (
       <TextInput
@@ -95,7 +103,9 @@ function Control({ q, answers, update, setField }: Pick<Props, "q" | "answers" |
 // the matching design-system control sits below, with an optional detail field
 // and a Clear/Collapse affordance.
 export default function QuestionCard({ q, answers, update, setField, answered, onClear, onCollapse }: Props) {
-  const detail = q.detailField;
+  // The toggle is its own affordance — no detail escape-hatch, no clear/collapse.
+  const isToggle = q.kind === "toggle";
+  const detail = isToggle ? undefined : q.detailField;
   return (
     <FormField
       label={q.label}
@@ -119,7 +129,7 @@ export default function QuestionCard({ q, answers, update, setField, answered, o
           />
         ) : null}
 
-        {answered ? (
+        {isToggle ? null : answered ? (
           <div className="flex justify-end">
             <Button variant="ghost" tone="danger" size="sm" iconLeft={X} onClick={onClear}>
               Clear
