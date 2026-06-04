@@ -220,6 +220,7 @@ export default function PatientView({ patient, roster, onBack, onNavigate }: Pat
               <div className="overflow-hidden rounded-md border border-neutral-200">
                 {tasks.map((task, i) => {
                   const entry = entryFor(logEntries, patient.id, task.id);
+                  const Icon = TASK_ICON[task.id] ?? ClipboardList;
                   return (
                     <div
                       key={task.id}
@@ -229,10 +230,10 @@ export default function PatientView({ patient, roster, onBack, onNavigate }: Pat
                     >
                       <span
                         className={`grid h-7 w-7 flex-none place-items-center rounded-full ${
-                          entry ? "bg-success-600 text-white" : "border-2 border-neutral-200 text-xs font-extrabold text-neutral-400"
+                          entry ? "bg-success-600 text-white" : "border-2 border-neutral-200 text-neutral-400"
                         }`}
                       >
-                        {entry ? <Check aria-hidden="true" className="h-4 w-4" /> : i + 1}
+                        {entry ? <Check aria-hidden="true" className="h-4 w-4" /> : <Icon aria-hidden="true" className="h-4 w-4" />}
                       </span>
                       <div className="min-w-0 flex-1">
                         <div className="text-[15px] font-bold leading-tight text-neutral-900">{task.label}</div>
