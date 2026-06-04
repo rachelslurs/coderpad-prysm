@@ -1,10 +1,8 @@
 import {
-  Bell,
   ClipboardList,
   Clock,
   LayoutGrid,
   Settings,
-  Users,
   type LucideIcon,
 } from "lucide-react";
 import { formatClock, useShift } from "../state/shiftContext";
@@ -54,9 +52,7 @@ export default function NavRail({
         1N
       </div>
       <NavButton icon={LayoutGrid} label="Assignment" active={active === "assignment"} onClick={() => onNavigate("assignment")} />
-      <NavButton icon={Users} label="Residents" />
       <NavButton icon={ClipboardList} label="Batch tasks" active={active === "batch"} onClick={() => onNavigate("batch")} />
-      <NavButton icon={Bell} label="Alerts" />
       <div className="mt-auto flex flex-col items-center gap-3">
         {clockedInAt && (
           <div
