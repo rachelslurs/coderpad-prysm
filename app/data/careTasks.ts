@@ -63,6 +63,9 @@ export type LogEntry = {
   by: string;
   /** Epoch ms. */
   at: number;
+  /** Set when struck out (corrected). No deletes — the original persists with a
+   *  line-through, stops affecting the record, and isn't shown back to its author. */
+  struck?: { reason: string; by: string; at: number };
 };
 
 const sampleValue = (task: DocTask): string => {
@@ -86,14 +89,16 @@ export const seedInitialLog = (cnaId: string, now: number): LogEntry[] =>
       }))
   );
 
-/** Distinct tasks logged for a resident (their completed-task count). */
+/** Distinct tasks with a live (non-struck) entry for a resident. */
 export const doneCount = (patient: Patient, log: LogEntry[]): number =>
-  new Set(log.filter((e) => e.residentId === patient.id).map((e) => e.taskId)).size;
+  new Set(log.filter((e) => e.residentId === patient.id && !e.struck).map((e) => e.taskId)).size;
 
-/** The latest entry for a resident's task, if any. */
+/** The latest live (non-struck) entry for a resident's task, if any. */
 export const entryFor = (log: LogEntry[], residentId: number, taskId: string): LogEntry | undefined =>
   log.reduce<LogEntry | undefined>(
     (latest, e) =>
-      e.residentId === residentId && e.taskId === taskId && (!latest || e.at >= latest.at) ? e : latest,
+      e.residentId === residentId && e.taskId === taskId && !e.struck && (!latest || e.at >= latest.at)
+        ? e
+        : latest,
     undefined
   );

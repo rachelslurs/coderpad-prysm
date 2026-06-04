@@ -15,15 +15,23 @@ export function ShiftProvider({ children }: { children: ReactNode }) {
   // Clock in once per shift — a second press is a no-op.
   const clockIn = () => setClockedInAt((prev) => prev ?? new Date());
 
-  // Append-only: documentation is never overwritten in place (corrections strike
-  // out rather than delete — a later PR).
+  // Append-only: documentation is never overwritten in place.
   const logEntry = (entry: { residentId: number; taskId: string; value: string }) => {
     const at = Date.now();
     setLogEntries((prev) => [...prev, { ...entry, id: `${entry.residentId}-${entry.taskId}-${at}`, by: CNA.id, at }]);
   };
 
+  // Strike out (correct) — no deletes. A CNA can only strike their own entries.
+  const strikeEntry = (id: string, reason: string) => {
+    setLogEntries((prev) =>
+      prev.map((e) =>
+        e.id === id && e.by === CNA.id && !e.struck ? { ...e, struck: { reason, by: CNA.id, at: Date.now() } } : e
+      )
+    );
+  };
+
   return (
-    <ShiftContext.Provider value={{ cna: CNA, clockedInAt, clockIn, logEntries, logEntry }}>
+    <ShiftContext.Provider value={{ cna: CNA, clockedInAt, clockIn, logEntries, logEntry, strikeEntry }}>
       {children}
     </ShiftContext.Provider>
   );
