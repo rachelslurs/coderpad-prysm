@@ -1,6 +1,7 @@
 // state/shiftContext.ts — shift context + hook (non-component, so it lives apart
 // from the provider component for fast-refresh).
 import { createContext, useContext } from "react";
+import type { LogEntry } from "../../data/careTasks";
 
 export type Cna = { id: string; name: string; initials: string };
 
@@ -11,6 +12,10 @@ export type ShiftContextValue = {
   /** When the CNA clocked in (paid time starts). `null` until they do. */
   clockedInAt: Date | null;
   clockIn: () => void;
+  /** Documentation logged this shift. */
+  logEntries: LogEntry[];
+  /** Record a structured task value (stamped with the CNA + time). */
+  logEntry: (entry: { residentId: number; taskId: string; value: string }) => void;
 };
 
 export const ShiftContext = createContext<ShiftContextValue | null>(null);
