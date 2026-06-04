@@ -76,8 +76,8 @@ export { Cover } from "./Cover";
 export type { CoverProps } from "./Cover";
 export { Sidebar } from "./Sidebar";
 export type { SidebarProps, SideWidth, ContentMin } from "./Sidebar";
-export { Icon } from "./Icon";
-export type { IconProps } from "./Icon";
+export { InlineIcon } from "./InlineIcon";
+export type { InlineIconProps } from "./InlineIcon";
 export { Container } from "./Container";
 export type { ContainerProps } from "./Container";
 

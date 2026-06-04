@@ -43,7 +43,7 @@ page is the cross-reference for **confusable pairs**.
 | Pin content to the centre of a full-height region | **Cover** | Center |
 | Place a fixed rail beside fluid content | **Sidebar** | Grid |
 | Make a component adapt to its parent's width | **Container** | Center, Sidebar |
-| Inline an icon sized to the text | **Icon** | IconTile |
+| Inline an icon sized to the text | **InlineIcon** | IconTile |
 
 ---
 
@@ -126,7 +126,7 @@ pick by density:
   save/connectivity state, with a spinner for in-progress.
 - **Badge** — any other labelled status, category, or flag. (SyncStatus is built on it.)
 
-### Layout primitives (Box · Center · Cover · Sidebar · Container · Icon)
+### Layout primitives (Box · Center · Cover · Sidebar · Container · InlineIcon)
 
 These are the structural [Every Layout](https://every-layout.dev) primitives —
 generic, context-agnostic, and styled only from the system's Tailwind scale
@@ -147,9 +147,10 @@ classes win.
   **Center** is horizontal: max-width + auto margins.
 - **Sidebar vs Grid** — **Sidebar** is a fixed rail + one fluid column that
   collapses to a stack at `contentMin`. **Grid** is many equal cells that reflow.
-- **Icon vs IconTile** — **Icon** inline-sizes a lucide glyph to the
-  surrounding text's cap height. **IconTile** is a standalone *tinted* icon chip
-  with no surrounding text.
+- **InlineIcon vs IconTile** — **InlineIcon** ("Icon with Text") inline-sizes a
+  lucide glyph to the surrounding text's cap height, for a glyph that lives in
+  running text. **IconTile** is a standalone *tinted* icon chip with no
+  surrounding text.
 
 ### AppBar vs Section
 

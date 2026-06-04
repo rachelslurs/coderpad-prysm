@@ -1,10 +1,14 @@
 import type { LucideIcon } from "lucide-react";
 import { MARGIN_E, type Space } from "../lib/scale";
 
-// The "Icon" layout primitive (after Every Layout). Inline-sizes an icon to the
-// surrounding text's cap height, so a glyph always matches its line — at any
-// font size — with optional spacing before the following text and an accessible
-// label.
+// The "Icon" layout primitive (after Every Layout), named InlineIcon here to
+// make its single job unmistakable: an icon that sits *inline with text*, sized
+// to the surrounding text's cap height, so a glyph always matches its line — at
+// any font size — with optional spacing before the following text and an
+// accessible label.
+//
+// This is NOT a general icon component: for a standalone tinted icon chip use
+// IconTile; for an inline glyph in running text or a label, this is the one.
 //
 // The glyph comes from the design system's icon set (lucide-react), the same
 // `LucideIcon` type Badge and IconTile take — not arbitrary SVG.
@@ -20,7 +24,7 @@ import { MARGIN_E, type Space } from "../lib/scale";
 // never rely on the glyph alone (redundant encoding).
 const WRAP = "inline-flex items-baseline";
 
-export type IconProps = {
+export type InlineIconProps = {
   /** The glyph, from the design system's icon set (lucide-react). */
   icon: LucideIcon;
   /** Space between the icon and the following text, as a spacing token. If
@@ -33,7 +37,7 @@ export type IconProps = {
   className?: string;
 };
 
-export default function Icon({ icon: Glyph, space, label, className = "" }: IconProps) {
+export default function InlineIcon({ icon: Glyph, space, label, className = "" }: InlineIconProps) {
   const parts = [WRAP];
   if (space != null) parts.push(MARGIN_E[space]);
   if (className) parts.push(className);
