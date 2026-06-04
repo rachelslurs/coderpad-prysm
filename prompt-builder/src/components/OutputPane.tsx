@@ -36,8 +36,8 @@ export default function OutputPane({ blocks }: { blocks: Block[] }) {
         </Button>
       </div>
       <div className="flex flex-col gap-4">
-        {blocks.map((b) => (
-          <PromptBlock key={b.id} block={b} />
+        {blocks.map((b, i) => (
+          <PromptBlock key={b.id} step={i + 1} block={b} />
         ))}
       </div>
     </div>

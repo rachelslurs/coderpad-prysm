@@ -67,6 +67,86 @@ function detailPhrase(detailLayout?: string): string | null {
   }
 }
 
+function clockInPhrasing(rel?: string): string | undefined {
+  switch (rel) {
+    case "Same action as sign-in":
+      return "clocking in IS the sign-in action; signing in starts the shift.";
+    case "Separate from sign-in":
+      return "clock-in is a separate action from sign-in.";
+    case "Unsure":
+      return "treat clock-in as a distinct action for now, easy to merge with sign-in later.";
+    default:
+      return undefined;
+  }
+}
+
+function clockInLocation(gate?: string): string | undefined {
+  if (!gate) return undefined;
+  return gate === "Can review assignment before clocking in"
+    ? "the global nav, so it's reachable but not a barrier to reviewing the assignment"
+    : "the global nav, and gate the shift start on it";
+}
+
+function assignmentConfirmPhrasing(confirm?: string): string | undefined {
+  switch (confirm) {
+    case "Confirm is a real gate":
+      return "Confirmation is a real gate, the shift can't start until the CNA confirms.";
+    case "Confirm is a formality":
+      return "Confirmation is a light formality, don't make it a heavy interruption.";
+    case "Unsure":
+      return "Treat confirmation as a simple explicit step.";
+    default:
+      return undefined;
+  }
+}
+
+function multiDevicePhrasing(md?: string): string | undefined {
+  switch (md) {
+    case "One device per shift":
+      return "Assume one device per shift; no cross-device session syncing needed.";
+    case "Caregiver can be signed in on multiple devices":
+      return "Support a caregiver signed in on multiple devices; the sync/session model and the offline queue must reconcile across devices (note this for the backend).";
+    case "Unsure":
+      return "Leave multi-device open for now; don't assume single-device.";
+    default:
+      return undefined;
+  }
+}
+
+function mistakeCorrectionPhrasing(correction?: string): string | undefined {
+  switch (correction) {
+    case "CNA self-edits":
+      return "the CNA can edit a committed entry directly.";
+    case "Amendment/correction that preserves the original":
+      return "edits create an amendment that preserves the original entry (it's a medical record), both visible and attributed, not a silent overwrite.";
+    case "Escalates to a nurse":
+      return "the CNA flags it and correction is handled by a nurse, not edited in place.";
+    case "Unsure":
+      return "leave correction handling open; just make entries non-destructively editable for now.";
+    default:
+      return undefined;
+  }
+}
+
+// Follow-up 1's sort instruction. mostDangerous (if filled) leads so the single
+// most dangerous miss surfaces first, then sortPriority; either may stand alone.
+function sortInstruction(a: Answers): string | undefined {
+  const danger = a.mostDangerous.trim();
+  const sort = a.sortPriority.trim();
+  if (danger && sort) return `Sort the cluster so ${danger} surfaces first, then ${sort}.`;
+  if (danger) return `Sort the cluster so ${danger} surfaces first.`;
+  if (sort) return `Sort the cluster ${sort}.`;
+  return undefined;
+}
+
+// Follow-up 4 addendum: how a committed entry gets corrected (+ optional detail).
+function mistakeCorrectionLine(a: Answers): string | undefined {
+  const phrasing = mistakeCorrectionPhrasing(a.mistakeCorrection);
+  const detail = a.mistakeCorrectionDetail.trim();
+  if (!phrasing && !detail) return undefined;
+  return sentences("Correcting a committed entry:", phrasing, detail || false);
+}
+
 // Join sentence segments with single spaces, dropping any empty ones.
 function sentences(...parts: (string | false | null | undefined)[]): string {
   return parts.filter(Boolean).join(" ");
@@ -93,20 +173,46 @@ function lead(a: Answers): Block {
       "\nSeed with the existing patient data and placeholder grouping so I can see structure. Don't wire real sort logic yet. Show me the result.",
   ].join("\n\n");
 
-  return { id: "lead", title: "Lead — always run first", text };
+  return { id: "lead", title: "Lead · shell — always run first", text };
+}
+
+function clockIn(a: Answers): Block | null {
+  const phrasing = clockInPhrasing(a.clockInRelationship);
+  const location = clockInLocation(a.clockInGate);
+  if (!phrasing && !location) return null;
+  const detail = a.clockInDetail.trim();
+  const text = sentences(
+    "Clock-in flow:",
+    phrasing,
+    detail || false,
+    location && `Reflect this in the shell, the time clock lives in ${location}.`,
+  );
+  return { id: "clockIn", title: "Clock-in", text };
+}
+
+function assignmentSelection(a: Answers): Block | null {
+  if (!a.includeAssignmentSelection) return null;
+  const text = sentences(
+    "Add an Assignment Selection step that precedes the assignment view: the CNA reviews their pre-assigned resident list and confirms before the shift starts.",
+    a.assignmentSource.trim() && `Source/ownership: ${a.assignmentSource.trim()}.`,
+    a.assignmentAdjust.trim() && `Adjustments: ${a.assignmentAdjust.trim()}.`,
+    assignmentConfirmPhrasing(a.assignmentConfirm),
+    "Keep it lightweight, it's a review-and-confirm gate, not a heavy editor. Reuse the roster row component so the selection list and the assignment view stay visually consistent.",
+  );
+  return { id: "assignmentSelection", title: "Assignment Selection", text };
 }
 
 function fu1(a: Answers): Block | null {
   const list = urgentList(a.urgentCriteria);
-  const sort = a.sortPriority.trim();
+  const sort = sortInstruction(a);
   if (!list && !sort) return null;
   const text = sentences(
     "Make the 'Needs attention' cluster real.",
     list && `A resident belongs there if they have any of: ${list}.`,
-    sort && `Sort the cluster ${sort}.`,
+    sort,
     "The roster sorts by the same priority descending, then room, default sort is triage, NOT room number, because the first 10 minutes is prioritization. Keep the grouping/priority criteria in one place so it's trivial to change.",
   );
-  return { id: "fu1", title: "Follow-up 1 · Needs-attention cluster", text };
+  return { id: "fu1", title: "Needs-attention / triage", text };
 }
 
 function fu2(a: Answers): Block | null {
@@ -118,7 +224,7 @@ function fu2(a: Answers): Block | null {
     a.photoDetail.trim() || false,
     "Render risk flags, admit/discharge, and active alerts ONLY when present, as chips using icon + text + color, never color alone (accessibility, glove-glance). Reuse the existing chip/badge component.",
   );
-  return { id: "fu2", title: "Follow-up 2 · Resident card content", text };
+  return { id: "fu2", title: "Resident card · fields + photo", text };
 }
 
 function fu3(a: Answers): Block | null {
@@ -127,8 +233,9 @@ function fu3(a: Answers): Block | null {
     "Add an ambient sync indicator to the top bar: a calm chip showing online/synced vs offline with a queued count. Not a modal, never blocks.",
     a.syncDetail.trim() || false,
     "For any write, show per-entry sync state: optimistic (appears immediately but visibly pending), confirmed (resolves to a quiet saved state), and failed (loud and PERSISTENT, never a vanishing toast, since a silently-failed vital is a safety problem).",
+    multiDevicePhrasing(a.multiDevice),
   );
-  return { id: "fu3", title: "Follow-up 3 · Sync", text };
+  return { id: "fu3", title: "Connectivity / sync", text };
 }
 
 function fu4(a: Answers): Block | null {
@@ -138,8 +245,9 @@ function fu4(a: Answers): Block | null {
     `Clicking a resident opens their detail (${phrase}) with carryover from last shift and quick actions for Vitals, Meals, ADLs.`,
     "Keep documentation OFF the overview, the overview decides WHO, the detail documents WHAT. Inputs are structured only (numeric/predefined, no freeform). Do NOT pre-fill measured values with defaults, show the last reading as reference next to an empty field, never inside it. Flag implausible or unchanged values rather than adding a blanket 'did you measure this?' confirm gate.",
     a.detailLayoutDetail.trim() || false,
+    mistakeCorrectionLine(a),
   );
-  return { id: "fu4", title: "Follow-up 4 · Resident detail", text };
+  return { id: "fu4", title: "Patient detail + documentation", text };
 }
 
 function fu5(a: Answers): Block | null {
@@ -148,7 +256,7 @@ function fu5(a: Answers): Block | null {
     "Support documenting one task type across the whole assignment in a single pass (e.g. meal intake for every resident), in addition to per-resident entry.",
     a.batchNote.trim() || false,
   );
-  return { id: "fu5", title: "Follow-up 5 · Batch documentation", text };
+  return { id: "fu5", title: "Batch documentation", text };
 }
 
 function notes(a: Answers): Block | null {
@@ -157,8 +265,20 @@ function notes(a: Answers): Block | null {
   return { id: "notes", title: "Notes · session context", text: `Additional context from the session: ${ft}` };
 }
 
+// Build sequence: the shell first (the container must exist before refinements),
+// then the flow order — clock-in, the opt-in assignment step, triage, card
+// fields, patient detail, batch, and connectivity last. Notes stays a separate
+// trailing block. The output pane numbers blocks by this order.
 export function buildBlocks(a: Answers): Block[] {
-  return [lead(a), fu1(a), fu2(a), fu3(a), fu4(a), fu5(a), notes(a)].filter(
-    (b): b is Block => b !== null,
-  );
+  return [
+    lead(a),
+    clockIn(a),
+    assignmentSelection(a),
+    fu1(a),
+    fu2(a),
+    fu4(a),
+    fu5(a),
+    fu3(a),
+    notes(a),
+  ].filter((b): b is Block => b !== null);
 }
