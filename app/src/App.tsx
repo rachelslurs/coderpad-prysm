@@ -79,7 +79,6 @@ function ShiftFlow() {
             <PatientView
               patient={selected}
               roster={roster}
-              onBack={() => setSelectedId(null)}
               onNavigate={setSelectedId}
             />
           ) : (
