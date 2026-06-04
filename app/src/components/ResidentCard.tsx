@@ -48,7 +48,7 @@ export default function ResidentCard({ patient, onPress }: ResidentCardProps) {
           <TaskProgress
             value={done}
             total={patient.tasksTotal}
-            size={44}
+            size={56}
             tone={progressTone(done, patient.tasksTotal)}
             label={`Care tasks: ${done} of ${patient.tasksTotal} done`}
           />
