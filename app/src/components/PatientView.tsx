@@ -1,10 +1,10 @@
 import {
   AppBar,
-  Avatar,
   Button,
   IconTile,
   Section,
   TaskProgress,
+  toInitials,
 } from "@prysm/design-system";
 import {
   ArrowLeft,
@@ -58,16 +58,17 @@ function PagerButton({
       type="button"
       disabled={!resident}
       onClick={() => resident && onNavigate(resident.id)}
-      className={`flex min-h-[52px] items-center gap-3 rounded border border-neutral-200 bg-white px-3.5 py-1.5 ${
-        dir === "next" ? "text-right" : ""
-      } enabled:hover:border-accent-500 enabled:hover:bg-accent-50 disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500`}
+      className="flex min-h-[52px] w-full min-w-0 items-center gap-2 rounded border border-neutral-200 bg-white px-2.5 py-1.5 enabled:hover:border-accent-500 enabled:hover:bg-accent-50 disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
     >
       {dir === "prev" && chevron}
-      <span>
+      <span className={`min-w-0 flex-1 ${dir === "next" ? "text-right" : ""}`}>
         <span className="block text-[10px] font-bold uppercase tracking-widest text-neutral-400">{label}</span>
-        <span className="block text-sm font-bold text-neutral-900">
-          {resident ? `${resident.name} · ${resident.room}` : "— None —"}
+        <span className="block truncate text-sm font-bold text-neutral-900">
+          {resident ? resident.name : "— None —"}
         </span>
+        {resident && (
+          <span className="block text-xs font-semibold text-neutral-500">Room {resident.room}</span>
+        )}
       </span>
       {dir === "next" && chevron}
     </button>
@@ -117,52 +118,56 @@ export default function PatientView({ patient, roster, onBack, onNavigate }: Pat
         }
       />
 
-      {/* Back + patient pager */}
+      {/* Back to assignment */}
       <div className="flex flex-none items-center gap-4 border-b border-neutral-200 bg-white px-5 py-2.5">
         <Button variant="ghost" tone="accent" iconLeft={ArrowLeft} onClick={onBack}>
           Back to assignment
         </Button>
-        <div className="ml-auto flex gap-2.5">
-          <PagerButton dir="prev" resident={prev} onNavigate={onNavigate} />
-          <PagerButton dir="next" resident={next} onNavigate={onNavigate} />
-        </div>
       </div>
 
       {/* Two columns */}
       <div className="flex min-h-0 flex-1">
-        {/* Left rail — identity + progress, pinned */}
-        <aside className="w-[344px] flex-none overflow-y-auto border-r border-neutral-200 bg-neutral-50">
-          <div className="border-b border-neutral-200 px-6 py-6">
-            <Avatar name={patient.name} size="lg" />
-            <h1 className="mt-3.5 text-2xl font-extrabold leading-tight tracking-tight text-neutral-900">{patient.name}</h1>
-            <div className="text-[15px] font-bold text-neutral-700">
-              Room {formatRoom(patient.room)} · <span className="tabular-nums">{patient.age}</span> · {patient.sex}
+        {/* Left rail — identity + progress, with the patient pager pinned to the bottom */}
+        <aside className="flex w-[344px] flex-none flex-col border-r border-neutral-200 bg-neutral-50">
+          <div className="flex-1 overflow-y-auto">
+            <div className="border-b border-neutral-200 px-6 py-6">
+              <div className="h-24 w-24 overflow-hidden rounded-full border border-accent-100 bg-accent-50">
+                {patient.photoUrl ? (
+                  <img src={patient.photoUrl} alt={patient.name} className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-2xl font-extrabold text-accent-700">
+                    {toInitials(patient.name)}
+                  </div>
+                )}
+              </div>
+              <h1 className="mt-3.5 text-2xl font-extrabold leading-tight tracking-tight text-neutral-900">{patient.name}</h1>
+              <div className="text-[15px] font-bold text-neutral-700">
+                Room {formatRoom(patient.room)} · <span className="tabular-nums">{patient.age}</span> · {patient.sex}
+              </div>
+              <div className="mt-1.5 text-sm font-medium text-neutral-500">
+                {patient.diagnosis}
+                {patient.stay && <> · {patient.stay}</>}
+              </div>
+              <div className="mt-3.5">
+                <CareIconRow patient={patient} />
+              </div>
+              <div className="mt-3.5 flex items-center gap-1.5 text-xs font-medium text-neutral-400">
+                <History aria-hidden="true" className="h-3.5 w-3.5" />
+                Last updated {updatedAgo(patient)}
+              </div>
             </div>
-            <div className="mt-1.5 text-sm font-medium text-neutral-500">
-              {patient.diagnosis}
-              {patient.stay && <> · {patient.stay}</>}
-            </div>
-            <div className="mt-3.5">
-              <CareIconRow patient={patient} />
-            </div>
-            <div className="mt-3.5 flex items-center gap-1.5 text-xs font-medium text-neutral-400">
-              <History aria-hidden="true" className="h-3.5 w-3.5" />
-              Last updated {updatedAgo(patient)}
+            <div className="px-6 py-6">
+              <Section title="Today's care">
+                <TaskProgress variant="bar" value={tasksDone} total={tasksTotal} tone={tone} label="Tasks complete" />
+                <p className="mt-2.5 text-[13px] font-semibold text-neutral-500">
+                  {remaining === 0 ? "All tasks complete for this shift." : `${remaining} task${remaining === 1 ? "" : "s"} remaining`}
+                </p>
+              </Section>
             </div>
           </div>
-          <div className="px-6 py-6">
-            <Section title="Today's care">
-              <TaskProgress
-                variant="bar"
-                value={tasksDone}
-                total={tasksTotal}
-                tone={tone}
-                label="Tasks complete"
-              />
-              <p className="mt-2.5 text-[13px] font-semibold text-neutral-500">
-                {remaining === 0 ? "All tasks complete for this shift." : `${remaining} task${remaining === 1 ? "" : "s"} remaining`}
-              </p>
-            </Section>
+          <div className="grid flex-none grid-cols-2 gap-2 border-t border-neutral-200 p-4">
+            <PagerButton dir="prev" resident={prev} onNavigate={onNavigate} />
+            <PagerButton dir="next" resident={next} onNavigate={onNavigate} />
           </div>
         </aside>
 
