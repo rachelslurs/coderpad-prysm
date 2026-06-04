@@ -29,3 +29,22 @@ type Story = StoryObj<typeof meta>;
 
 export const Titled: Story = {};
 export const Untitled: Story = { args: { title: undefined } };
+
+// Section header: leading dot + label + count pill + trailing rule.
+export const WithCount: Story = {
+  args: {
+    title: "Needs attention",
+    count: 3,
+    tone: "danger",
+    children: <p className="text-neutral-700">Cluster of cards goes here.</p>,
+  },
+};
+
+export const WithCountNeutral: Story = {
+  args: {
+    title: "Full assignment",
+    count: 12,
+    tone: "neutral",
+    children: <p className="text-neutral-700">Roster goes here.</p>,
+  },
+};

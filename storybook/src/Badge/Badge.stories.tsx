@@ -1,5 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { AlertOctagon, CheckCircle } from "lucide-react";
+import {
+  AlertOctagon,
+  ArrowLeftRight,
+  Bed,
+  CheckCircle,
+  LogIn,
+  LogOut,
+} from "lucide-react";
 import Badge from "./Badge";
 import type { Tone } from "../types";
 
@@ -34,9 +41,18 @@ const meta = {
   argTypes: {
     tone: { control: "inline-radio", options: TONES },
     size: { control: "inline-radio", options: ["sm", "md"] },
+    fill: { control: "inline-radio", options: ["tint", "solid"] },
+    pill: { control: "boolean" },
     interactive: { control: "boolean" },
   },
-  args: { tone: "neutral", size: "md", children: "Label", interactive: false },
+  args: {
+    tone: "neutral",
+    size: "md",
+    fill: "tint",
+    pill: false,
+    children: "Label",
+    interactive: false,
+  },
 } satisfies Meta<typeof Badge>;
 
 export default meta;
@@ -66,4 +82,34 @@ export const AllTones: Story = {
 
 export const Success: Story = {
   args: { tone: "success", icon: CheckCircle, children: "Passed" },
+};
+
+// Filled treatment — for an event that carries significance, not just a category.
+export const Solid: Story = {
+  args: { fill: "solid", tone: "info", pill: true, icon: LogIn, children: "Admit Today" },
+};
+
+export const Pill: Story = {
+  args: { pill: true, tone: "accent", children: "Pill" },
+};
+
+// Admission / transfer events: solid = today's event needing action; tint =
+// informational status. All pills, all paired with an icon + label.
+export const AdmissionEvents: Story = {
+  render: () => (
+    <div className="flex flex-wrap gap-2">
+      <Badge fill="solid" tone="info" pill icon={LogIn}>
+        Admit Today
+      </Badge>
+      <Badge fill="solid" tone="warning" pill icon={LogOut}>
+        Discharge
+      </Badge>
+      <Badge tone="info" pill icon={ArrowLeftRight}>
+        Transfer
+      </Badge>
+      <Badge tone="neutral" pill icon={Bed}>
+        New Room
+      </Badge>
+    </div>
+  ),
 };
