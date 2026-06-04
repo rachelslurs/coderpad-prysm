@@ -22,5 +22,5 @@ export const updatedAgo = (patient: Patient): string => {
  * Tone for the task-progress ring — no triage colour tiers; neutral while work is
  * outstanding, success (emerald) the moment every task is done.
  */
-export const progressTone = (patient: Patient): Tone =>
-  patient.tasksTotal > 0 && patient.tasksDone === patient.tasksTotal ? "success" : "neutral";
+export const progressTone = (done: number, total: number): Tone =>
+  total > 0 && done === total ? "success" : "neutral";
