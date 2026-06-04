@@ -1,8 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { AlertOctagon } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { AlertOctagon, HeartPulse, Microscope, Pill } from "lucide-react";
 import EntityRow from "./EntityRow";
 import { Avatar } from "../Avatar";
 import { Badge } from "../Badge";
+import { IconTile } from "../IconTile";
 import { Skeleton } from "../Skeleton";
 import type { Tone } from "../types";
 
@@ -80,6 +82,40 @@ export const Roster: Story = {
             ) : undefined
           }
           trailing={count(r.done, 6)}
+          onPress={() => {}}
+        />
+      ))}
+    </div>
+  ),
+};
+
+// Non-person entities. The `avatar` slot takes a tinted `IconTile` instead of an
+// `Avatar` — the case where IconField can't help, because the title/subtitle
+// live in EntityRow's own slots, not in an icon · label · value pair.
+const UNITS: { name: string; meta: string; icon: LucideIcon; tone: Tone; occupied: number; beds: number }[] = [
+  { name: "Cardiology", meta: "Telemetry · 3rd floor", icon: HeartPulse, tone: "danger", occupied: 9, beds: 14 },
+  { name: "Imaging Suite", meta: "CT · MRI · X-ray", icon: Microscope, tone: "info", occupied: 4, beds: 6 },
+  { name: "Pharmacy", meta: "Inpatient dispensing", icon: Pill, tone: "success", occupied: 12, beds: 12 },
+];
+
+export const NonPersonEntities: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Departments, not people. The leading visual is a tinted `IconTile` in the `avatar` slot — a standalone chip with no label/value of its own.",
+      },
+    },
+  },
+  render: () => (
+    <div className="divide-y divide-neutral-100 overflow-hidden border border-neutral-200 bg-white">
+      {UNITS.map((u) => (
+        <EntityRow
+          key={u.name}
+          title={u.name}
+          subtitle={u.meta}
+          avatar={<IconTile icon={u.icon} tone={u.tone} />}
+          trailing={count(u.occupied, u.beds)}
           onPress={() => {}}
         />
       ))}
