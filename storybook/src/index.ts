@@ -67,6 +67,22 @@ export type { SelectProps } from "./Select";
 export { Kbd } from "./Kbd";
 export type { KbdProps } from "./Kbd";
 
+// Layout (Every Layout primitives — structural, context-agnostic)
+export { Box } from "./Box";
+export type { BoxProps } from "./Box";
+export { Center } from "./Center";
+export type { CenterProps } from "./Center";
+export { Cover } from "./Cover";
+export type { CoverProps } from "./Cover";
+export { Sidebar } from "./Sidebar";
+export type { SidebarProps, SideWidth, ContentMin } from "./Sidebar";
+export { Icon } from "./Icon";
+export type { IconProps } from "./Icon";
+export { Container } from "./Container";
+export type { ContainerProps } from "./Container";
+
 // Helpers + types
 export { toInitials } from "./lib/toInitials";
 export type { Tone } from "./types";
+// Layout scale tokens (the scale-key prop types the layout primitives accept)
+export type { Space, BorderWidth, Measure, MinHeight } from "./lib/scale";

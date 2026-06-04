@@ -38,6 +38,12 @@ page is the cross-reference for **confusable pairs**.
 | Show a "no results" message | **EmptyState** | Skeleton |
 | Cover a region with a detail view | **OverlayPanel** | Card, Section |
 | Build a sortable table header | **ColumnHeader** | SortIndicator |
+| Contain a region (padding + border) | **Box** | Card, Section |
+| Constrain text to a readable measure | **Center** | Container |
+| Pin content to the centre of a full-height region | **Cover** | Center |
+| Place a fixed rail beside fluid content | **Sidebar** | Grid |
+| Make a component adapt to its parent's width | **Container** | Center, Sidebar |
+| Inline an icon sized to the text | **Icon** | IconTile |
 
 ---
 
@@ -119,6 +125,31 @@ pick by density:
 - **SyncStatus** — a pre-mapped Badge for `saved` / `saving` / `queued` / `failed`
   save/connectivity state, with a spinner for in-progress.
 - **Badge** — any other labelled status, category, or flag. (SyncStatus is built on it.)
+
+### Layout primitives (Box · Center · Cover · Sidebar · Container · Icon)
+
+These are the structural [Every Layout](https://every-layout.dev) primitives —
+generic, context-agnostic, and styled only from the system's Tailwind scale
+tokens. They take **scale keys** (a spacing step, a measure token, a ratio),
+never raw CSS lengths, and leave color to the consumer's `className` so theme
+classes win.
+
+- **Box vs Card** — **Box** is the bare unit of containment (padding + a
+  `currentColor` border, no surface). **Card** *is a Box* with the rounded,
+  white, raised treatment added. Reach for Card for a surface; Box when you only
+  need bounds, or as the base of a new surface component.
+- **Center vs Container** — **Center** caps a column to a readable *measure* and
+  centres it. **Container** establishes a *container-query context* so children
+  adapt to its width. One constrains width; the other enables width-driven
+  variants.
+- **Cover vs Center** — **Cover** is vertical: a min-height region with one
+  `data-cover-center` child pinned to the middle and satellites above/below.
+  **Center** is horizontal: max-width + auto margins.
+- **Sidebar vs Grid** — **Sidebar** is a fixed rail + one fluid column that
+  collapses to a stack at `contentMin`. **Grid** is many equal cells that reflow.
+- **Icon vs IconTile** — **Icon** inline-sizes a lucide glyph to the
+  surrounding text's cap height. **IconTile** is a standalone *tinted* icon chip
+  with no surrounding text.
 
 ### AppBar vs Section
 
