@@ -1,6 +1,9 @@
 import type { ElementType, ReactNode } from "react";
+import { Box } from "../Box";
+import type { Space } from "../lib/scale";
 
-const PADDING = { none: "", sm: "p-3", md: "p-4" } as const;
+// Map the Card's named padding sizes onto the spacing scale Box understands.
+const PADDING: Record<"none" | "sm" | "md", Space> = { none: 0, sm: 3, md: 4 };
 
 export type CardProps = {
   /** Element to render as (e.g. "section", "article"). Defaults to "div". */
@@ -12,8 +15,9 @@ export type CardProps = {
   children: ReactNode;
 };
 
-// Generic bordered surface — the repeated "rounded-md border bg-white shadow-sm"
-// container, with no domain knowledge.
+// Generic bordered surface — the "rounded-md border bg-white shadow-sm"
+// container, with no domain knowledge. Built on the Box primitive: Box supplies
+// the padding + border; Card adds the rounded, white, raised surface treatment.
 export default function Card({
   as: Tag = "div",
   padding = "md",
@@ -21,10 +25,12 @@ export default function Card({
   children,
 }: CardProps) {
   return (
-    <Tag
-      className={`rounded-md border border-neutral-200 bg-white shadow-sm ${PADDING[padding]} ${className}`.trim()}
+    <Box
+      as={Tag}
+      padding={PADDING[padding]}
+      className={`rounded-md border-neutral-200 bg-white shadow-sm ${className}`.trim()}
     >
       {children}
-    </Tag>
+    </Box>
   );
 }
