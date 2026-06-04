@@ -140,9 +140,12 @@ export default function PatientView({ patient, roster, onBack, onNavigate }: Pat
                   </div>
                 )}
               </div>
-              <h1 className="mt-3.5 text-2xl font-extrabold leading-tight tracking-tight text-neutral-900">{patient.name}</h1>
-              <div className="text-[15px] font-bold text-neutral-700">
-                Room {formatRoom(patient.room)} · <span className="tabular-nums">{patient.age}</span> · {patient.sex}
+              <h1 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight text-neutral-900">
+                {patient.name}
+              </h1>
+              <div className="mt-1 text-xl font-bold text-neutral-700">Room {formatRoom(patient.room)}</div>
+              <div className="text-sm font-semibold tabular-nums text-neutral-500">
+                {patient.age} · {patient.sex}
               </div>
               <div className="mt-1.5 text-sm font-medium text-neutral-500">
                 {patient.diagnosis}
