@@ -131,11 +131,11 @@ export default function PatientView({ patient, roster, onBack, onNavigate }: Pat
         <aside className="flex w-[344px] flex-none flex-col border-r border-neutral-200 bg-neutral-50">
           <div className="flex-1 overflow-y-auto">
             <div className="border-b border-neutral-200 px-6 py-6">
-              <div className="h-24 w-24 overflow-hidden rounded-full border border-accent-100 bg-accent-50">
+              <div className="h-36 w-36 overflow-hidden rounded-full border border-accent-100 bg-accent-50">
                 {patient.photoUrl ? (
                   <img src={patient.photoUrl} alt={patient.name} className="h-full w-full object-cover" />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-2xl font-extrabold text-accent-700">
+                  <div className="flex h-full w-full items-center justify-center text-4xl font-extrabold text-accent-700">
                     {toInitials(patient.name)}
                   </div>
                 )}
