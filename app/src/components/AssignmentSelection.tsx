@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AppBar, Badge, Button, Card, OverlayPanel, Select } from "@prysm/design-system";
+import { AppBar, Badge, Button, Card, OverlayPanel, Select, Toggle } from "@prysm/design-system";
 import { ArrowRight, ChevronRight, Clock, Plus } from "lucide-react";
 import type { Patient } from "../../data/patients";
 import {
@@ -19,7 +19,6 @@ import ResidentRow from "./ResidentRow";
 
 type AssignmentSelectionProps = {
   onConfirm: (items: AssignmentItem[]) => void;
-  onStartWithoutAssignment?: () => void;
 };
 
 type Dialog = { kind: "remove"; patient: Patient } | { kind: "add" } | null;
@@ -41,10 +40,7 @@ const REASONS = [
 // Switching to a different pre-set assignment is low friction (a dropdown); adding
 // or removing a specific resident is high friction (a reason that routes to a
 // supervisor) but never blocks starting.
-export default function AssignmentSelection({
-  onConfirm,
-  onStartWithoutAssignment,
-}: AssignmentSelectionProps) {
+export default function AssignmentSelection({ onConfirm }: AssignmentSelectionProps) {
   const { clockedInAt } = useShift();
   const [assignmentId, setAssignmentId] = useState(DEFAULT_ASSIGNMENT_ID);
   const [items, setItems] = useState<AssignmentItem[]>(buildInitialAssignment);
@@ -52,6 +48,7 @@ export default function AssignmentSelection({
   const [dialog, setDialog] = useState<Dialog>(null);
   const [reason, setReason] = useState("");
   const [addId, setAddId] = useState<string | null>(null);
+  const [acknowledged, setAcknowledged] = useState(false);
 
   const addable = unassignedForAssignment(assignmentId).filter(
     (p) => !items.some((i) => i.patient.id === p.id)
@@ -68,6 +65,7 @@ export default function AssignmentSelection({
     setDialog(null);
     setReason("");
     setAddId(null);
+    setAcknowledged(false);
   };
 
   const requestRemoval = (patient: Patient) => {
@@ -167,24 +165,6 @@ export default function AssignmentSelection({
             </p>
           </header>
 
-          {/* Low-friction: switch to a different pre-set assignment. */}
-          <div className="mb-5 flex flex-wrap items-center gap-3">
-            <div className="w-full max-w-xs">
-              <Select
-                label="Assignment"
-                options={ASSIGNMENTS.map((a) => ({
-                  value: a.id,
-                  label: `${a.label} · ${a.patientIds.length}`,
-                }))}
-                selectedKey={assignmentId}
-                onSelectionChange={(key) => switchAssignment(String(key))}
-              />
-            </div>
-            <p className="flex-1 text-sm text-neutral-500">
-              Not your group? Pick a different pre-set assignment.
-            </p>
-          </div>
-
           <Card padding="none" className="divide-y divide-neutral-100">
             {items.map((item) => (
               <ResidentRow
@@ -196,6 +176,19 @@ export default function AssignmentSelection({
               />
             ))}
           </Card>
+
+          {/* Low-friction: switch to a different pre-set assignment (below the list). */}
+          <div className="mt-4 w-full max-w-xs">
+            <Select
+              label="Assignment"
+              options={ASSIGNMENTS.map((a) => ({
+                value: a.id,
+                label: `${a.label} · ${a.patientIds.length}`,
+              }))}
+              selectedKey={assignmentId}
+              onSelectionChange={(key) => switchAssignment(String(key))}
+            />
+          </div>
 
           {/* High-friction: add / remove a specific resident. */}
           <div className="mt-4">
@@ -246,21 +239,9 @@ export default function AssignmentSelection({
                 </>
               )}
             </p>
-            <div className="flex items-center gap-4">
-              {onStartWithoutAssignment && (
-                <button
-                  type="button"
-                  data-testid="start-without-assignment"
-                  onClick={onStartWithoutAssignment}
-                  className="rounded text-sm font-semibold text-neutral-500 hover:text-neutral-700 focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-600"
-                >
-                  Assignment not ready? Start shift now
-                </button>
-              )}
-              <Button size="touch" iconRight={ArrowRight} data-testid="confirm-shift" onClick={() => onConfirm(items)}>
-                Confirm &amp; start shift
-              </Button>
-            </div>
+            <Button size="touch" iconRight={ArrowRight} data-testid="confirm-shift" onClick={() => onConfirm(items)}>
+              Confirm &amp; start shift
+            </Button>
           </div>
         </div>
       </div>
@@ -307,6 +288,14 @@ export default function AssignmentSelection({
                 selectedKey={reason || undefined}
                 onSelectionChange={(key) => setReason(String(key))}
               />
+              <div className="rounded-md border border-neutral-200 bg-neutral-50 p-3">
+                <Toggle isSelected={acknowledged} onChange={setAcknowledged}>
+                  <span className="text-sm font-semibold text-neutral-700">
+                    I understand this goes to my supervisor for review, and I stay responsible for this
+                    resident until it&rsquo;s approved.
+                  </span>
+                </Toggle>
+              </div>
             </div>
 
             <div className="mt-5 flex justify-end gap-2">
@@ -315,7 +304,7 @@ export default function AssignmentSelection({
               </Button>
               <Button
                 tone={dialog.kind === "remove" ? "danger" : "accent"}
-                disabled={!reason || (dialog.kind === "add" && !addId)}
+                disabled={!reason || !acknowledged || (dialog.kind === "add" && !addId)}
                 onClick={dialog.kind === "remove" ? () => requestRemoval(dialog.patient) : requestAddition}
               >
                 Send request to supervisor
