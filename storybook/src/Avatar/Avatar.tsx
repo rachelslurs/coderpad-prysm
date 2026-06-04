@@ -20,7 +20,7 @@ export type AvatarProps = {
 };
 
 const BASE =
-  "inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full font-extrabold";
+  "inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full font-bold";
 
 // Photo-or-fallback avatar: photo → initials (accent tint) → generic user icon.
 export default function Avatar({ src, name, size = "md", alt }: AvatarProps) {

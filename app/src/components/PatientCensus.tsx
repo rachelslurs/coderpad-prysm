@@ -349,7 +349,7 @@ export default function PatientCensus() {
                 >
                   {formatRoom(patient.room)}
                 </td>
-                <td className="px-6 py-3.5 align-middle text-xl font-extrabold leading-tight text-neutral-900">
+                <td className="px-6 py-3.5 align-middle text-xl font-bold leading-tight text-neutral-900">
                   {hideNames ? toInitials(patient.name) : patient.name}
                 </td>
                 <td className="px-6 py-3.5 align-middle text-base tabular-nums text-neutral-600">
