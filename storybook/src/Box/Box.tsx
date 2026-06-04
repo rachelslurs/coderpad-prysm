@@ -17,7 +17,8 @@ import { BORDER, PAD, type BorderWidth, type Space } from "../lib/scale";
 // - `className` is appended last so consumer/theme styles take precedence.
 
 export type BoxProps = {
-  /** Element to render as (e.g. "section", "article", "aside"). Defaults to "div". */
+  /** Element or component to render as (e.g. "section", "article", or a
+   *  react-aria `Button`). Defaults to "div". */
   as?: ElementType;
   /** Padding, as a spacing-scale token. Defaults to `6`. */
   padding?: Space;
@@ -30,6 +31,10 @@ export type BoxProps = {
   /** Theme/consumer classes — applied last, so they win over the base. */
   className?: string;
   children: ReactNode;
+  /** Any other props are forwarded to the rendered element — so Box can drive
+   *  interactive elements too (e.g. `onPress` on a Button, `aria-*`, `data-*`).
+   *  This is how higher-level surfaces (Card, EntityCard) compose Box. */
+  [prop: string]: unknown;
 };
 
 export default function Box({
@@ -39,10 +44,15 @@ export default function Box({
   invert = false,
   className = "",
   children,
+  ...rest
 }: BoxProps) {
   const parts = [PAD[padding], BORDER[borderWidth]];
   if (invert) parts.push("invert", "bg-white");
   if (className) parts.push(className);
 
-  return <Tag className={parts.join(" ")}>{children}</Tag>;
+  return (
+    <Tag className={parts.join(" ")} {...rest}>
+      {children}
+    </Tag>
+  );
 }
