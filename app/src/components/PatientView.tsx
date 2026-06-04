@@ -110,8 +110,8 @@ export default function PatientView({ patient, roster, onBack, onNavigate }: Pat
               Synced · <span className="tabular-nums">2</span> queued
             </span>
             <span className="inline-flex items-center gap-2 text-sm font-bold">
-              <span className="grid h-8 w-8 place-items-center rounded-full bg-accent-600 text-xs font-extrabold text-white">CN</span>
-              A. Reyes
+              <span className="grid h-8 w-8 place-items-center rounded-full bg-accent-600 text-xs font-extrabold text-white">JM</span>
+              Jenna McLaughlin
             </span>
           </>
         }

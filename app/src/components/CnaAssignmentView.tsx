@@ -1,4 +1,4 @@
-import { AppBar, Button, EmptyState, SyncStatus } from "@prysm/design-system";
+import { AppBar, EmptyState, SyncStatus } from "@prysm/design-system";
 import {
   Bell,
   ClipboardList,
@@ -19,8 +19,6 @@ type CnaAssignmentViewProps = {
   items: AssignmentItem[];
   /** Open a resident's patient view (assignment or search). */
   onOpenPatient: (patient: Patient) => void;
-  /** Open the assignment review (shown in the pending state). */
-  onReviewAssignment?: () => void;
 };
 
 // One placeholder nav destination. Real routing is a later iteration.
@@ -52,11 +50,7 @@ function NavButton({
 // surface. One sorted list of **uniform** cards — every resident takes the same
 // space; triage is conveyed by sort order (time-sensitive → alert → room) and the
 // fixed care icons, never by card size.
-export default function CnaAssignmentView({
-  items,
-  onOpenPatient,
-  onReviewAssignment,
-}: CnaAssignmentViewProps) {
+export default function CnaAssignmentView({ items, onOpenPatient }: CnaAssignmentViewProps) {
   const { clockedInAt } = useShift();
   const all = rosterItems(effectiveRoster(items));
   const pending = all.length === 0;
@@ -104,15 +98,8 @@ export default function CnaAssignmentView({
         </AppBar>
 
         {pending ? (
-          <div className="flex flex-1 flex-col items-center justify-center p-8 text-center">
-            <EmptyState icon={ClipboardList}>
-              Your assignment isn&rsquo;t set yet. You&rsquo;re clocked in — your supervisor may still be finalizing it.
-            </EmptyState>
-            {onReviewAssignment && (
-              <Button className="mt-4" onClick={onReviewAssignment}>
-                Review assignment
-              </Button>
-            )}
+          <div className="flex flex-1 items-center justify-center p-8">
+            <EmptyState icon={ClipboardList}>No residents on your assignment.</EmptyState>
           </div>
         ) : (
           <div className="flex-1 overflow-y-auto px-6 py-5">

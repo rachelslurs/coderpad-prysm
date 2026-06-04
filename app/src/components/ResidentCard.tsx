@@ -29,7 +29,11 @@ export default function ResidentCard({ patient, onPress }: ResidentCardProps) {
       <div className="flex items-start gap-3">
         <span
           title={patient.name}
-          className="relative z-0 flex-none transition-transform duration-150 ease-out hover:z-10 hover:scale-150 group-focus-visible:scale-150"
+          className={`relative z-0 flex-none rounded-full ${
+            patient.photoUrl
+              ? "transition-transform duration-150 ease-out hover:z-20 hover:scale-[1.9] hover:shadow-xl group-focus-visible:z-20 group-focus-visible:scale-[1.9]"
+              : ""
+          }`}
         >
           <Avatar name={patient.name} src={patient.photoUrl} size="md" />
         </span>

@@ -4,7 +4,7 @@ import { createContext, useContext } from "react";
 
 export type Cna = { id: string; name: string; initials: string };
 
-export const CNA: Cna = { id: "reyes", name: "A. Reyes", initials: "AR" };
+export const CNA: Cna = { id: "mclaughlin", name: "Jenna McLaughlin", initials: "JM" };
 
 export type ShiftContextValue = {
   cna: Cna;
