@@ -27,7 +27,6 @@ type PatientViewProps = {
   patient: Patient;
   /** The CNA's roster, sorted by room — the set the pager walks. */
   roster: Patient[];
-  onBack: () => void;
   onNavigate: (id: Patient["id"]) => void;
 };
 
@@ -79,7 +78,7 @@ function PagerButton({
 // the read-only overview and documentation. The overview stays put until the CNA
 // chooses to log; entering documentation swaps the prev/next pager for a tasks
 // list and shows the structured inputs on the right.
-export default function PatientView({ patient, roster, onBack, onNavigate }: PatientViewProps) {
+export default function PatientView({ patient, roster, onNavigate }: PatientViewProps) {
   const { logEntries, logEntry, strikeEntry } = useShift();
   const [docTaskId, setDocTaskId] = useState<string | null>(null);
 
@@ -99,12 +98,6 @@ export default function PatientView({ patient, roster, onBack, onNavigate }: Pat
 
   return (
     <div className="flex h-full flex-col bg-neutral-50">
-      <div className="flex flex-none items-center gap-4 border-b border-neutral-200 bg-white px-5 py-2.5">
-        <Button variant="ghost" tone="accent" iconLeft={ArrowLeft} onClick={onBack}>
-          Back to assignment
-        </Button>
-      </div>
-
       <div className="flex min-h-0 flex-1">
         {/* Shared identity column. Footer swaps pager (overview) ↔ back (documenting). */}
         <aside className="flex w-[344px] flex-none flex-col border-r border-neutral-200 bg-neutral-50">
