@@ -1,0 +1,10 @@
+@import url("https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap");
+@import "tailwindcss";
+
+/* Reuse the design system's semantic tones (bg-accent-500, text-danger-700, …)
+   so this tool matches the rest of the repo. */
+@import "@prysm/design-system/theme.css";
+
+/* The design-system components are consumed as source from the sibling
+   workspace — Tailwind must scan them so their utility classes get generated. */
+@source "../../storybook/src";
