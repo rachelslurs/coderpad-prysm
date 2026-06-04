@@ -17,10 +17,9 @@ import {
   SquarePen,
 } from "lucide-react";
 import type { Patient } from "../../data/patients";
-import { signalsFor } from "../../data/residentSignals";
 import { formatRoom } from "../lib/format";
-import { progressTone } from "../lib/residentDisplay";
-import { ResidentChips } from "./residentDisplay";
+import { progressTone, updatedAgo } from "../lib/residentDisplay";
+import CareIconRow from "./CareIconRow";
 
 type PatientViewProps = {
   patient: Patient;
@@ -80,7 +79,7 @@ function PagerButton({
 // scrolls away on a wide monitor. Opens when a resident on the assignment is
 // pressed (replacing the side drawer). Triage colour is signal-based.
 export default function PatientView({ patient, roster, onBack, onNavigate }: PatientViewProps) {
-  const { tasksDone, tasksTotal, transfer } = signalsFor(patient.id);
+  const { tasksDone, tasksTotal, transfer } = patient;
   const tone = progressTone(patient);
   const remaining = tasksTotal - tasksDone;
 
@@ -143,14 +142,12 @@ export default function PatientView({ patient, roster, onBack, onNavigate }: Pat
               {patient.diagnosis}
               {patient.stay && <> · {patient.stay}</>}
             </div>
-            {patient.flags.length > 0 && (
-              <div className="mt-3.5 flex flex-wrap items-center gap-1.5">
-                <ResidentChips patient={patient} size="md" />
-              </div>
-            )}
+            <div className="mt-3.5">
+              <CareIconRow patient={patient} />
+            </div>
             <div className="mt-3.5 flex items-center gap-1.5 text-xs font-medium text-neutral-400">
               <History aria-hidden="true" className="h-3.5 w-3.5" />
-              Last updated {patient.updated}
+              Last updated {updatedAgo(patient)}
             </div>
           </div>
           <div className="px-6 py-6">

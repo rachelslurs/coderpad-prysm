@@ -1,50 +1,77 @@
-import { Avatar, EntityCard, TaskProgress } from "@prysm/design-system";
+import { Avatar, Badge, TaskProgress } from "@prysm/design-system";
+import { Clock } from "lucide-react";
 import type { Patient } from "../../data/patients";
-import { signalsFor } from "../../data/residentSignals";
 import { formatRoom } from "../lib/format";
-import { ageSex, progressTone } from "../lib/residentDisplay";
-import { ResidentChips, TransferIcon } from "./residentDisplay";
+import { isStale, progressTone, updatedAgo } from "../lib/residentDisplay";
+import CareIconRow from "./CareIconRow";
 
 type ResidentCardProps = {
   patient: Patient;
-  /** Makes the whole card an accessible button with a trailing chevron. */
   onPress?: () => void;
 };
 
-// The featured, attention-getting representation of a resident — used in the
-// pinned "Needs attention" triage cluster. Same encoding as <ResidentRow/>,
-// rendered at card density. Maps onto <EntityCard/>.
+// The single, uniform resident card — every resident takes the same space. Triage
+// is conveyed by sort order and the care icons, never by card size. Shows the
+// CNA scan line (room · name · photo), the fixed care-icon row, task progress,
+// any time-sensitive task, and a freshness stamp (labelled stale when old).
+//
+// Photo enlarges on hover/focus; the full name is exposed on avatar hover for
+// accessibility (initials fallback when there's no photo).
 export default function ResidentCard({ patient, onPress }: ResidentCardProps) {
-  const { tasksDone, tasksTotal } = signalsFor(patient.id);
+  const stale = isStale(patient);
 
   return (
-    <EntityCard
-      avatar={<Avatar name={patient.name} size="md" />}
-      title={
-        <span className="flex items-center gap-2">
-          <span className="font-bold text-neutral-500 tabular-nums">{formatRoom(patient.room)}</span>
-          <span>{patient.name}</span>
-          <TransferIcon patient={patient} />
+    <button
+      type="button"
+      onClick={onPress}
+      className="group flex h-full w-full flex-col gap-3 border border-neutral-200 bg-white p-4 text-left transition-colors hover:bg-neutral-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent-600"
+    >
+      <div className="flex items-start gap-3">
+        <span
+          title={patient.name}
+          className="relative z-0 flex-none transition-transform duration-150 ease-out hover:z-10 hover:scale-150 group-focus-visible:scale-150"
+        >
+          <Avatar name={patient.name} src={patient.photoUrl} size="md" />
         </span>
-      }
-      subtitle={
-        <>
-          {patient.diagnosis} · {ageSex(patient)}
-        </>
-      }
-      badges={<ResidentChips patient={patient} size="md" />}
-      trailing={
-        tasksTotal > 0 ? (
+        <div className="min-w-0 flex-1">
+          <div className="text-sm font-bold tabular-nums text-neutral-500">
+            Room {formatRoom(patient.room)}
+          </div>
+          <div className="truncate text-lg font-extrabold leading-tight text-neutral-900">
+            {patient.name}
+          </div>
+        </div>
+        {patient.tasksTotal > 0 && (
           <TaskProgress
-            value={tasksDone}
-            total={tasksTotal}
-            size={52}
+            value={patient.tasksDone}
+            total={patient.tasksTotal}
+            size={44}
             tone={progressTone(patient)}
-            label={`Care tasks: ${tasksDone} of ${tasksTotal} done`}
+            label={`Care tasks: ${patient.tasksDone} of ${patient.tasksTotal} done`}
           />
-        ) : undefined
-      }
-      onPress={onPress}
-    />
+        )}
+      </div>
+
+      <CareIconRow patient={patient} />
+
+      <div className="mt-auto flex items-center justify-between gap-2 pt-1 text-xs">
+        {patient.timeSensitive ? (
+          <span className="inline-flex items-center gap-1 font-semibold text-neutral-700">
+            <Clock aria-hidden="true" className="h-3.5 w-3.5" />
+            {patient.timeSensitive.label} · {patient.timeSensitive.due}
+          </span>
+        ) : (
+          <span aria-hidden="true" />
+        )}
+        <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-neutral-400">
+          {stale && (
+            <Badge tone="warning" size="sm">
+              Stale
+            </Badge>
+          )}
+          Updated {updatedAgo(patient)}
+        </span>
+      </div>
+    </button>
   );
 }
