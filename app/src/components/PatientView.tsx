@@ -175,8 +175,6 @@ export default function PatientView({ patient, roster, onBack, onNavigate }: Pat
                               <span className="inline-flex items-center gap-1 text-xs font-bold text-success-700">
                                 <Check aria-hidden="true" className="h-3.5 w-3.5" /> Done
                               </span>
-                            ) : active ? (
-                              <span className="text-xs font-bold uppercase tracking-wide text-accent-700">Now</span>
                             ) : null}
                           </button>
                         </li>
