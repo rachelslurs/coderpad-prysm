@@ -95,7 +95,7 @@ export default function TaskProgress({
               );
             })()}
           </svg>
-          <span className="absolute text-[15px] font-extrabold tabular-nums text-neutral-900">
+          <span className="absolute text-[15px] font-bold tabular-nums text-neutral-900">
             {count}
           </span>
         </div>
