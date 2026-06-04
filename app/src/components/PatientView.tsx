@@ -108,7 +108,7 @@ export default function PatientView({ patient, roster, onBack, onNavigate }: Pat
       <div className="flex min-h-0 flex-1">
         {/* Shared identity column. Footer swaps pager (overview) ↔ back (documenting). */}
         <aside className="flex w-[344px] flex-none flex-col border-r border-neutral-200 bg-neutral-50">
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto [scrollbar-gutter:stable_both-edges]">
             <div className="flex flex-col items-center px-6 pt-6 text-center">
               <div className="h-36 w-36 overflow-hidden rounded-full border border-accent-100 bg-accent-50">
                 {patient.photoUrl ? (
