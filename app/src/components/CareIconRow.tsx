@@ -8,19 +8,21 @@ import {
   Accessibility,
   CircleCheck,
   Droplets,
-  HandHelping,
   PersonStanding,
   TriangleAlert,
+  User,
   Users,
   type LucideIcon,
 } from "lucide-react";
 import type { Continence, Patient, TransferNeed } from "../../data/patients";
 
-const TRANSFER: Record<TransferNeed, { icon: LucideIcon; label: string }> = {
+// `people` drives the count badge (paralleling two-person's "2"); omitted for
+// independent transfers (no badge).
+const TRANSFER: Record<TransferNeed, { icon: LucideIcon; label: string; people?: number }> = {
   independent: { icon: PersonStanding, label: "Independent transfer" },
-  "one-assist": { icon: HandHelping, label: "One-person assist" },
-  "two-person": { icon: Users, label: "Two-person transfer" },
-  "mechanical-lift": { icon: Accessibility, label: "Mechanical lift — needs 2 people" },
+  "one-assist": { icon: User, label: "One-person assist", people: 1 },
+  "two-person": { icon: Users, label: "Two-person transfer", people: 2 },
+  "mechanical-lift": { icon: Accessibility, label: "Mechanical lift — needs 2 people", people: 2 },
 };
 
 const CONTINENCE: Record<Continence, { icon: LucideIcon; label: string }> = {
@@ -79,14 +81,13 @@ export default function CareIconRow({ patient, size = "md" }: { patient: Patient
   const highRisk = patient.fallRisk || patient.wanderer;
   const transfer = TRANSFER[patient.transfer];
   const continence = CONTINENCE[patient.continence];
-  const people = patient.transfer === "two-person" || patient.transfer === "mechanical-lift" ? 2 : undefined;
 
   return (
     <div className={`flex items-center ${SIZE[size].gap}`}>
       {/* 1 — high-risk (empty slot when none) */}
       <Slot icon={highRisk ? TriangleAlert : null} label={highRisk ? riskLabel(patient) : undefined} size={size} />
       {/* 2 — transfer */}
-      <Slot icon={transfer.icon} label={transfer.label} muted={patient.transfer === "independent"} badge={people} size={size} />
+      <Slot icon={transfer.icon} label={transfer.label} muted={patient.transfer === "independent"} badge={transfer.people} size={size} />
       {/* 3 — continence */}
       <Slot icon={continence.icon} label={continence.label} muted={patient.continence === "continent"} size={size} />
     </div>
