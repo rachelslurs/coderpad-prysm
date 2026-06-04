@@ -9,15 +9,18 @@ import {
 } from "lucide-react";
 import { formatClock, useShift } from "../state/shiftContext";
 
-// One placeholder nav destination. Real routing is a later iteration.
+export type NavView = "assignment" | "batch";
+
 function NavButton({
   icon: Icon,
   label,
   active = false,
+  onClick,
 }: {
   icon: LucideIcon;
   label: string;
   active?: boolean;
+  onClick?: () => void;
 }) {
   return (
     <button
@@ -25,6 +28,7 @@ function NavButton({
       aria-label={label}
       aria-current={active ? "page" : undefined}
       title={label}
+      onClick={onClick}
       className={`flex h-11 w-11 items-center justify-center rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 ${
         active ? "bg-neutral-800 text-white" : "text-neutral-400 hover:bg-neutral-800/60 hover:text-neutral-200"
       }`}
@@ -34,19 +38,24 @@ function NavButton({
   );
 }
 
-// The persistent global nav rail — shared by the assignment view and the patient
-// detail so the menu never moves between them. Carries the time clock (the CNA is
-// clocked in for the whole shift).
-export default function NavRail() {
+// The persistent global nav rail — shared by every in-shift screen so the menu
+// never moves. Carries the time clock (the CNA is clocked in for the whole shift).
+export default function NavRail({
+  active,
+  onNavigate,
+}: {
+  active: NavView;
+  onNavigate: (view: NavView) => void;
+}) {
   const { clockedInAt } = useShift();
   return (
     <nav className="flex w-16 flex-none flex-col items-center gap-1 bg-neutral-900 py-4">
       <div className="mb-4 flex h-9 w-9 items-center justify-center rounded-md bg-accent-600 text-sm font-extrabold text-white">
         1N
       </div>
-      <NavButton icon={LayoutGrid} label="Assignment" active />
+      <NavButton icon={LayoutGrid} label="Assignment" active={active === "assignment"} onClick={() => onNavigate("assignment")} />
       <NavButton icon={Users} label="Residents" />
-      <NavButton icon={ClipboardList} label="Tasks" />
+      <NavButton icon={ClipboardList} label="Batch tasks" active={active === "batch"} onClick={() => onNavigate("batch")} />
       <NavButton icon={Bell} label="Alerts" />
       <div className="mt-auto flex flex-col items-center gap-3">
         {clockedInAt && (
