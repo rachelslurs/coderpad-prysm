@@ -1,11 +1,24 @@
 import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
 import type { StorybookConfig } from "@storybook/react-vite";
+import remarkGfm from "remark-gfm";
 
 const config: StorybookConfig = {
   stories: ["../src/**/*.mdx", "../src/**/*.stories.@(ts|tsx)"],
   addons: [
-    getAbsolutePath("@storybook/addon-docs"),
+    // addon-docs' MDX only parses CommonMark by default; remark-gfm adds the
+    // GitHub-flavored extensions our docs pages rely on — notably the pipe
+    // tables in Overview.mdx and ChoosingAComponent.mdx ("By intent").
+    {
+      name: getAbsolutePath("@storybook/addon-docs"),
+      options: {
+        mdxPluginOptions: {
+          mdxCompileOptions: {
+            remarkPlugins: [remarkGfm],
+          },
+        },
+      },
+    },
     getAbsolutePath("@storybook/addon-a11y"),
     getAbsolutePath("@storybook/addon-vitest"),
     getAbsolutePath("@storybook/addon-mcp")
