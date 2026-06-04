@@ -14,9 +14,9 @@ export type AssignmentDef = {
 
 // Supervisor-defined groups for 1 North. The first is the one A. Reyes was handed.
 export const ASSIGNMENTS: ReadonlyArray<AssignmentDef> = [
-  { id: "north-full", label: "1 North · Full", patientIds: [1, 2, 3, 4, 5, 6, 7, 8] },
-  { id: "north-a", label: "1 North · Hall A", patientIds: [1, 2, 3, 4] },
-  { id: "north-b", label: "1 North · Hall B", patientIds: [5, 6, 7, 8] },
+  { id: "north-full", label: "1 North · Full", patientIds: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] },
+  { id: "north-a", label: "1 North · Hall A", patientIds: [1, 2, 3, 4, 5] },
+  { id: "north-b", label: "1 North · Hall B", patientIds: [6, 7, 8, 9, 10] },
 ];
 
 export const DEFAULT_ASSIGNMENT_ID = ASSIGNMENTS[0].id;

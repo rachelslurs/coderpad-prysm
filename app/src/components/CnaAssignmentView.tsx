@@ -1,14 +1,6 @@
-import {
-  AppBar,
-  Button,
-  Card,
-  EmptyState,
-  Section,
-  SyncStatus,
-} from "@prysm/design-system";
+import { AppBar, Button, EmptyState, SyncStatus } from "@prysm/design-system";
 import {
   Bell,
-  CheckCircle2,
   ClipboardList,
   LayoutGrid,
   Settings,
@@ -17,14 +9,11 @@ import {
 } from "lucide-react";
 import type { Patient } from "../../data/patients";
 import { effectiveRoster, type AssignmentItem } from "../lib/assignment";
-import { needsAttentionItems, rosterItems } from "../lib/triage";
+import { rosterItems } from "../lib/triage";
 import ResidentCard from "./ResidentCard";
-import ResidentRow from "./ResidentRow";
 import ResidentSearch from "./ResidentSearch";
 
 type CnaAssignmentViewProps = {
-  /** The confirmed assignment (pre-assigned ± requested changes). Empty when the
-   *  shift started before an assignment was confirmed. */
   items: AssignmentItem[];
   /** Open a resident's patient view (assignment or search). */
   onOpenPatient: (patient: Patient) => void;
@@ -32,8 +21,7 @@ type CnaAssignmentViewProps = {
   onReviewAssignment?: () => void;
 };
 
-// One placeholder nav destination in the global rail. Real routing is a later
-// iteration; this pass only establishes the shell.
+// One placeholder nav destination. Real routing is a later iteration.
 function NavButton({
   icon: Icon,
   label,
@@ -58,25 +46,21 @@ function NavButton({
   );
 }
 
-// The CNA Assignment View shell: left global nav rail · sticky status bar · a
-// pinned, non-scrolling "Needs attention" triage cluster · the full assignment
-// roster scrolling below. Pressing a resident opens their patient view (its own
-// page). Membership and ordering come from lib/triage.ts (the single source of
-// truth) — default sort is triage, not room.
+// The CNA Assignment View: the simplest "what do I need to know, go do the thing"
+// surface. One sorted list of **uniform** cards — every resident takes the same
+// space; triage is conveyed by sort order (time-sensitive → alert → room) and the
+// fixed care icons, never by card size.
 export default function CnaAssignmentView({
   items,
   onOpenPatient,
   onReviewAssignment,
 }: CnaAssignmentViewProps) {
-  const roster = effectiveRoster(items);
-  const needs = needsAttentionItems(roster);
-  const all = rosterItems(roster);
+  const all = rosterItems(effectiveRoster(items));
   const pending = all.length === 0;
   const assignedIds = new Set(items.map((i) => i.patient.id));
 
   return (
     <div className="flex h-full">
-      {/* Global nav rail — the time clock will live here in a later iteration. */}
       <nav className="flex w-16 flex-none flex-col items-center gap-1 bg-neutral-900 py-4">
         <div className="mb-4 flex h-9 w-9 items-center justify-center rounded-md bg-accent-600 text-sm font-extrabold text-white">
           1N
@@ -91,7 +75,6 @@ export default function CnaAssignmentView({
       </nav>
 
       <div className="relative flex flex-1 flex-col overflow-hidden">
-        {/* Sticky status bar — shift-long status (facility · sync). */}
         <AppBar
           tone="light"
           className="flex-none border-b border-neutral-200"
@@ -120,44 +103,25 @@ export default function CnaAssignmentView({
             )}
           </div>
         ) : (
-          <>
-            {/* Pinned triage cluster — does NOT scroll. The first-10-minutes surface. */}
-            <div className="flex-none border-b border-neutral-200 bg-neutral-50 px-6 py-5">
-              <Section title="Needs attention" count={needs.length} tone="neutral">
-                {needs.length > 0 ? (
-                  <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
-                    {needs.map((item) => (
-                      <ResidentCard
-                        key={item.patient.id}
-                        patient={item.patient}
-                        onPress={() => onOpenPatient(item.patient)}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <EmptyState icon={CheckCircle2}>No safety or clinical alerts right now.</EmptyState>
-                )}
-              </Section>
-            </div>
-
-            {/* Full assignment roster — scrolls. */}
-            <div className="flex-1 overflow-y-auto px-6 py-5">
-              <Section title="Full assignment" count={all.length}>
-                <Card padding="none" className="divide-y divide-neutral-100">
-                  {all.map((item) => (
-                    <ResidentRow
-                      key={item.patient.id}
-                      patient={item.patient}
-                      onPress={() => onOpenPatient(item.patient)}
-                    />
-                  ))}
-                </Card>
-              </Section>
-              <p className="mt-3 text-xs text-neutral-400">
-                Sorted by triage priority — safety risks first, then active alerts, then tasks due soonest. Not room number.
+          <div className="flex-1 overflow-y-auto px-6 py-5">
+            <div className="mb-3 flex items-baseline justify-between gap-3">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-neutral-500">
+                Your residents · <span className="tabular-nums">{all.length}</span>
+              </h2>
+              <p className="text-xs text-neutral-400">
+                Sorted by time-sensitive tasks, then alerts, then room
               </p>
             </div>
-          </>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+              {all.map((item) => (
+                <ResidentCard
+                  key={item.patient.id}
+                  patient={item.patient}
+                  onPress={() => onOpenPatient(item.patient)}
+                />
+              ))}
+            </div>
+          </div>
         )}
       </div>
     </div>
