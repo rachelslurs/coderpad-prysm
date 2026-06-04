@@ -1,40 +1,36 @@
 import { useState, type ReactNode } from "react";
-import { Badge, Button, Section, Segmented, Select, Toggle } from "@prysm/design-system";
+import { Badge, Button, Section, Segmented, SyncStatus, Toggle } from "@prysm/design-system";
 import { PATIENTS, type Patient } from "../../data/patients";
 import { CARE_TASKS, entryFor, tasksForResident, type DocTask } from "../../data/careTasks";
 import type { AssignmentItem } from "../lib/assignment";
 import { formatRoom } from "../lib/format";
-import { useShift } from "../state/shiftContext";
+import { formatClock, useShift } from "../state/shiftContext";
 
 type BatchDocumentationProps = {
   /** The CNA's assignment — the default set; "show all" widens to the unit. */
   items: AssignmentItem[];
 };
 
-// Tasks that batch cleanly in one pass (a single segmented choice). Vitals are
-// per-resident and stay on the patient view.
-const BATCH_TASKS = CARE_TASKS.filter((t): t is Extract<DocTask, { kind: "choice" | "meal" }> =>
-  t.kind === "choice" || t.kind === "meal"
-);
+// Batch documentation covers meal intake only — the one task that reliably batches
+// in a single pass (e.g. logging trays while you collect them). Everything else is
+// per-resident judgement and stays on the patient view.
+const MEAL_TASK = CARE_TASKS.find(
+  (t): t is Extract<DocTask, { kind: "meal" }> => t.kind === "meal"
+)!;
 
-const optionsFor = (task: Extract<DocTask, { kind: "choice" | "meal" }>): string[] =>
-  task.kind === "meal" ? task.amounts : task.options;
-
-// Batch documentation (Jenna's favourite): document one task type across many
-// residents in a single pass — e.g. meal intake while collecting trays. Includes
-// residents outside the assignment (the persistent search also reaches anyone),
-// plus a beginning-of-shift presence check.
+// Batch documentation (Jenna's favourite): log meal intake across many residents in
+// a single pass. Includes residents outside the assignment (the persistent search
+// also reaches anyone), plus a beginning-of-shift presence check.
 export default function BatchDocumentation({ items }: BatchDocumentationProps) {
   const { logEntries, logEntry } = useShift();
   const [mode, setMode] = useState<"task" | "presence">("task");
-  const [taskId, setTaskId] = useState(BATCH_TASKS[0].id);
   const [showAll, setShowAll] = useState(false);
   const [present, setPresent] = useState<Record<number, boolean>>({});
 
   const assignmentIds = new Set(items.map((i) => i.patient.id));
   const base = showAll ? PATIENTS : items.map((i) => i.patient);
 
-  const task = BATCH_TASKS.find((t) => t.id === taskId)!;
+  const taskId = MEAL_TASK.id;
   const taskResidents = base.filter((p) => tasksForResident(p).some((t) => t.id === taskId));
   const presentCount = base.filter((p) => present[p.id]).length;
 
@@ -47,27 +43,18 @@ export default function BatchDocumentation({ items }: BatchDocumentationProps) {
           value={mode}
           onChange={(v) => setMode(v as "task" | "presence")}
           options={[
-            { value: "task", label: "Document a task" },
+            { value: "task", label: "Meal intake" },
             { value: "presence", label: "Presence check" },
           ]}
         />
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-4">
-        {mode === "task" && (
-          <div className="w-full max-w-xs">
-            <Select
-              label="Task"
-              options={BATCH_TASKS.map((t) => ({ value: t.id, label: t.label }))}
-              selectedKey={taskId}
-              onSelectionChange={(k) => setTaskId(String(k))}
-            />
-          </div>
-        )}
-        <label className="flex items-center gap-2 text-sm font-semibold text-neutral-600">
-          <Toggle isSelected={showAll} onChange={setShowAll} aria-label="Include residents outside my assignment" />
-          Include all unit residents
-        </label>
+        <div className="w-fit">
+          <Toggle isSelected={showAll} onChange={setShowAll}>
+            <span className="text-sm font-semibold text-neutral-600">Include all unit residents</span>
+          </Toggle>
+        </div>
         {mode === "presence" && (
           <span className="text-sm font-semibold text-neutral-500">
             <span className="tabular-nums text-neutral-900">{presentCount}</span> / {base.length} present
@@ -84,19 +71,25 @@ export default function BatchDocumentation({ items }: BatchDocumentationProps) {
       </div>
 
       {mode === "task" ? (
-        <Section title={`${task.label} · ${taskResidents.length} residents`}>
+        <Section title={`${MEAL_TASK.label} · ${taskResidents.length} residents`}>
           <div className="overflow-hidden rounded-md border border-neutral-200">
-            {taskResidents.map((p, i) => (
-              <BatchRow key={p.id} patient={p} off={!assignmentIds.has(p.id)} divided={i > 0}>
-                <Segmented
-                  variant="picker"
-                  label={`${p.name} — ${task.label}`}
-                  options={optionsFor(task)}
-                  value={entryFor(logEntries, p.id, taskId)?.value ?? ""}
-                  onChange={(v) => logEntry({ residentId: p.id, taskId, value: v })}
-                />
-              </BatchRow>
-            ))}
+            {taskResidents.map((p, i) => {
+              const entry = entryFor(logEntries, p.id, taskId);
+              return (
+                <BatchRow key={p.id} patient={p} off={!assignmentIds.has(p.id)} divided={i > 0}>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Segmented
+                      variant="picker"
+                      label={`${p.name} — ${MEAL_TASK.label}`}
+                      options={MEAL_TASK.amounts}
+                      value={entry?.value ?? ""}
+                      onChange={(v) => logEntry({ residentId: p.id, taskId, value: v })}
+                    />
+                    {entry && <SyncStatus state="saved" note={formatClock(new Date(entry.at))} />}
+                  </div>
+                </BatchRow>
+              );
+            })}
           </div>
         </Section>
       ) : (
