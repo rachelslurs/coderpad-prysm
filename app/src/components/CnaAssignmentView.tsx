@@ -29,7 +29,7 @@ export default function CnaAssignmentView({ items, onOpenPatient }: CnaAssignmen
     <div className="h-full overflow-y-auto px-6 py-5">
       <div className="mb-3 flex items-baseline justify-between gap-3">
         <h2 className="text-xs font-bold uppercase tracking-widest text-neutral-500">
-          Your residents · <span className="tabular-nums">{all.length}</span>
+          Your assignment · <span className="tabular-nums">{all.length}</span>
         </h2>
         <p className="text-xs text-neutral-400">Sorted by time-sensitive tasks, then alerts, then room</p>
       </div>
