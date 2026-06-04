@@ -10,7 +10,20 @@ const meta = {
   title: "Data Display/EntityCard",
   component: EntityCard,
   tags: ["autodocs"],
-  parameters: { layout: "padded" },
+  parameters: {
+    layout: "padded",
+    docs: {
+      description: {
+        component: [
+          "The full-density **entity card** — a leading visual (avatar), a title + supporting line, an optional badge/flag row, and a trailing slot (progress, status, or a loading skeleton), with an optional leading status accent. One of the system's two workhorses; pairs with `EntityRow`.",
+          "",
+          "**When to use:** the primary, attention-getting representation of a record — a featured cluster, a card grid, or a detail header. Pass `onPress` to make the whole card an accessible, keyboard-operable button.",
+          "",
+          "**When not to:** dense lists of many records — use `EntityRow`, the compact sibling that renders the *same data* leaner (so a record looks identical across overview, roster, and header). For a plain bordered container with no entity semantics, use `Card`.",
+        ].join("\n"),
+      },
+    },
+  },
 } satisfies Meta<typeof EntityCard>;
 
 export default meta;

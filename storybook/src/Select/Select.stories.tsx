@@ -5,7 +5,20 @@ const meta = {
   title: "Forms/Select",
   component: Select,
   tags: ["autodocs"],
-  parameters: { layout: "padded" },
+  parameters: {
+    layout: "padded",
+    docs: {
+      description: {
+        component: [
+          "A single-select **dropdown** (react-aria) — a listbox popover with typeahead and keyboard nav, plus label / validation wiring. Accepts string or `{ value, label }` options.",
+          "",
+          "**When to use:** choosing one value from a longer list (~5+), or when the options should stay collapsed to save space.",
+          "",
+          "**When not to:** a short set of exclusive options that benefit from being all visible → `Segmented` (or its picker variant); a boolean → `Toggle`; free text → `TextInput`. Multi-select is not supported here.",
+        ].join("\n"),
+      },
+    },
+  },
   args: {
     label: "Shift",
     options: ["Day", "Evening", "Night"],

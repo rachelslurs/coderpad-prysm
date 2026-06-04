@@ -7,7 +7,20 @@ const meta = {
   title: "Navigation/AppBar",
   component: AppBar,
   tags: ["autodocs"],
-  parameters: { layout: "fullscreen" },
+  parameters: {
+    layout: "fullscreen",
+    docs: {
+      description: {
+        component: [
+          "A minimal, slot-based **top bar**: `start` (brand / title / back), an optional center slot, and `end` (actions, pushed right), in a `dark` command-bar tone or a `light` header tone.",
+          "",
+          "**When to use:** the top chrome of a page or app — compose tabs, menus, a `SyncStatus`, or buttons into the slots. Deliberately unopinionated so it fits both simple and rich headers.",
+          "",
+          "**When not to:** in-page section headings — use `Section`. It intentionally ships no account-menu or nav primitives; compose those into the slots yourself.",
+        ].join("\n"),
+      },
+    },
+  },
   argTypes: { tone: { control: "inline-radio", options: ["dark", "light"] } },
 } satisfies Meta<typeof AppBar>;
 

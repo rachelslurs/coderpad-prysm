@@ -10,7 +10,20 @@ const meta = {
   title: "Data Display/EntityRow",
   component: EntityRow,
   tags: ["autodocs"],
-  parameters: { layout: "padded" },
+  parameters: {
+    layout: "padded",
+    docs: {
+      description: {
+        component: [
+          "The compact, list-density sibling of `EntityCard` — identical data, leaner layout. Owns no divider, so stack rows inside a `divide-y` list on a surface.",
+          "",
+          "**When to use:** rosters and scannable lists where many records share the screen. Pass `onPress` for an accessible, keyboard-navigable row with a trailing chevron.",
+          "",
+          "**When not to:** a single featured record or a detail header — use `EntityCard`. For a generic clickable list item without the avatar / title / meta structure, build on `Card` or a plain button.",
+        ].join("\n"),
+      },
+    },
+  },
   args: { title: "Resident" },
 } satisfies Meta<typeof EntityRow>;
 
