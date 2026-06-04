@@ -5,11 +5,15 @@ export type UrgentCriteria = { selected: string[]; other: string };
 
 export type Answers = {
   device?: string;
+  deviceDetail: string;
   count?: string;
+  countDetail: string;
   photo?: string;
+  photoDetail: string;
   sync?: string;
   syncDetail: string;
   detailLayout?: string;
+  detailLayoutDetail: string;
   batchDoc?: string;
   batchNote: string;
   urgentCriteria: UrgentCriteria;
@@ -45,7 +49,7 @@ export const PHOTO_OPTIONS: string[] = [
 export const SYNC_OPTIONS: string[] = ["Needed", "Not needed"];
 export const DETAIL_LAYOUT_OPTIONS: string[] = [
   "Right-side pane (desktop)",
-  "Separate screen (mobile)",
+  "Separate screen",
   "Skip",
 ];
 export const BATCH_DOC_OPTIONS: string[] = [
@@ -56,11 +60,15 @@ export const BATCH_DOC_OPTIONS: string[] = [
 
 export const DEFAULT_ANSWERS: Answers = {
   device: undefined,
+  deviceDetail: "",
   count: undefined,
+  countDetail: "",
   photo: undefined,
+  photoDetail: "",
   sync: undefined,
   syncDetail: "",
   detailLayout: undefined,
+  detailLayoutDetail: "",
   batchDoc: undefined,
   batchNote: "",
   urgentCriteria: { selected: [], other: "" },
@@ -70,9 +78,19 @@ export const DEFAULT_ANSWERS: Answers = {
 };
 
 // Like DEFAULT_ANSWERS but fully empty — used when "Clear"-ing one question
-// (scanLine clears to "" so it leaves the Answered group). Reset, by contrast,
+// (scanLine clears to "" so it leaves the answered set). Reset, by contrast,
 // restores DEFAULT_ANSWERS (scanLine default back).
 export const CLEARED: Answers = { ...DEFAULT_ANSWERS, scanLine: "" };
+
+// Optional free-text addendum attached to a single-select, for nuance the
+// predefined options don't capture. Surfaces in that question's output block.
+export type DetailField =
+  | "deviceDetail"
+  | "countDetail"
+  | "photoDetail"
+  | "syncDetail"
+  | "detailLayoutDetail"
+  | "batchNote";
 
 export type QuestionKind = "single" | "multi" | "text";
 
@@ -84,21 +102,23 @@ export type Question = {
   kind: QuestionKind;
   control?: "segmented" | "select";
   options?: string[];
-  detailField?: "syncDetail" | "batchNote";
+  detailField?: DetailField;
   detailLabel?: string;
 };
 
 // Q1–Q9 (the structured questions). freeText (Q10) is the always-visible
-// catch-all, rendered separately — not part of the answered/unanswered lists.
+// catch-all, rendered separately — not part of the question list.
+// Every single-select carries an optional detail field as an escape hatch for
+// an option we haven't considered.
 export const QUESTIONS: Question[] = [
-  { id: "device", n: 1, label: "Device", kind: "single", control: "select", options: DEVICE_OPTIONS, hint: "where the CNA uses it" },
-  { id: "count", n: 2, label: "Roster size", kind: "single", control: "segmented", options: COUNT_OPTIONS, hint: "how many residents" },
+  { id: "device", n: 1, label: "Device", kind: "single", control: "select", options: DEVICE_OPTIONS, hint: "where the CNA uses it", detailField: "deviceDetail", detailLabel: "Anything else about the device? (optional)" },
+  { id: "count", n: 2, label: "Roster size", kind: "single", control: "segmented", options: COUNT_OPTIONS, hint: "how many residents", detailField: "countDetail", detailLabel: "Anything else about volume? (optional)" },
   { id: "urgentCriteria", n: 3, label: "Needs-attention criteria", kind: "multi", options: URGENT_OPTIONS, hint: "what flags a resident" },
   { id: "sortPriority", n: 4, label: "Sort priority", kind: "text", hint: "how to rank the cluster" },
-  { id: "photo", n: 5, label: "Resident photo", kind: "single", control: "segmented", options: PHOTO_OPTIONS, hint: "photo reliability" },
+  { id: "photo", n: 5, label: "Resident photo", kind: "single", control: "segmented", options: PHOTO_OPTIONS, hint: "photo reliability", detailField: "photoDetail", detailLabel: "Anything else about photos? (optional)" },
   { id: "scanLine", n: 6, label: "Primary scan line", kind: "text", hint: "the primary scan line" },
   { id: "sync", n: 7, label: "Offline sync", kind: "single", control: "segmented", options: SYNC_OPTIONS, hint: "needed?", detailField: "syncDetail", detailLabel: "Sync detail (optional)" },
-  { id: "detailLayout", n: 8, label: "Resident detail view", kind: "single", control: "segmented", options: DETAIL_LAYOUT_OPTIONS, hint: "where detail opens" },
+  { id: "detailLayout", n: 8, label: "Resident detail view", kind: "single", control: "segmented", options: DETAIL_LAYOUT_OPTIONS, hint: "where detail opens", detailField: "detailLayoutDetail", detailLabel: "A different detail approach? (optional)" },
   { id: "batchDoc", n: 9, label: "Batch documentation", kind: "single", control: "segmented", options: BATCH_DOC_OPTIONS, hint: "cross-assignment pass?", detailField: "batchNote", detailLabel: "Batch detail (optional)" },
 ];
 

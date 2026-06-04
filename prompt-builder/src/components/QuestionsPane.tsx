@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Card, Section, TextArea } from "@prysm/design-system";
+import { useEffect, useMemo, useState } from "react";
+import { Card, Segmented, TextArea } from "@prysm/design-system";
 import { CLEARED, QUESTIONS, isAnswered, type Answers, type Question } from "../answers";
 import QuestionCard from "./QuestionCard";
 
@@ -9,13 +9,39 @@ type Props = {
   setField: <K extends keyof Answers>(key: K, value: Answers[K]) => void;
 };
 
-// Left pane: the always-visible catch-all, then answered questions floated to
-// the top, then a compact, de-emphasized list of the rest (click to expand).
+type SortMode = "fixed" | "answered";
+const SORT_KEY = "prysm:prompt-builder:sort";
+const ORDER_OPTIONS = ["In order", "Answered first"];
+
+// Left pane: the always-visible catch-all, then the question list. By default
+// questions stay in a FIXED order — answering one never makes it jump. The
+// "Answered first" toggle opts into grouping answered questions to the top.
 export default function QuestionsPane({ answers, update, setField }: Props) {
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
+  const [sortMode, setSortMode] = useState<SortMode>(() => {
+    try {
+      return localStorage.getItem(SORT_KEY) === "answered" ? "answered" : "fixed";
+    } catch {
+      return "fixed";
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem(SORT_KEY, sortMode);
+    } catch {
+      // ignore write failures
+    }
+  }, [sortMode]);
 
-  const answered = QUESTIONS.filter((q) => isAnswered(q, answers));
-  const unanswered = QUESTIONS.filter((q) => !isAnswered(q, answers));
+  const answeredCount = QUESTIONS.filter((q) => isAnswered(q, answers)).length;
+
+  const ordered = useMemo(() => {
+    if (sortMode === "fixed") return QUESTIONS;
+    return [
+      ...QUESTIONS.filter((q) => isAnswered(q, answers)),
+      ...QUESTIONS.filter((q) => !isAnswered(q, answers)),
+    ];
+  }, [sortMode, answers]);
 
   const expand = (id: string) => setExpanded((s) => new Set(s).add(id));
   const collapse = (id: string) =>
@@ -42,60 +68,52 @@ export default function QuestionsPane({ answers, update, setField }: Props) {
         onChange={(freeText) => update({ freeText })}
       />
 
-      <Section title="Answered" count={answered.length} tone="success">
-        {answered.length === 0 ? (
-          <p className="text-sm text-neutral-500">
-            Nothing answered yet — tag answers as the interview goes.
-          </p>
-        ) : (
-          <Card padding="none" className="divide-y divide-neutral-100">
-            {answered.map((q) => (
-              <QuestionCard
-                key={q.id}
-                q={q}
-                answers={answers}
-                update={update}
-                setField={setField}
-                answered
-                onClear={() => clearQuestion(q)}
-              />
-            ))}
-          </Card>
-        )}
-      </Section>
+      <div>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">
+            Questions · {answeredCount}/{QUESTIONS.length} answered
+          </span>
+          <Segmented
+            label="Question order"
+            variant="segmented"
+            options={ORDER_OPTIONS}
+            value={sortMode === "answered" ? "Answered first" : "In order"}
+            onChange={(label) => setSortMode(label === "Answered first" ? "answered" : "fixed")}
+          />
+        </div>
 
-      <Section title="Not yet answered" count={unanswered.length} tone="neutral">
-        {unanswered.length === 0 ? (
-          <p className="text-sm text-neutral-500">Everything's answered.</p>
-        ) : (
-          <div className="flex flex-col gap-2">
-            {unanswered.map((q) =>
-              expanded.has(q.id) ? (
+        <div className="flex flex-col gap-2">
+          {ordered.map((q) => {
+            const ans = isAnswered(q, answers);
+            if (ans || expanded.has(q.id)) {
+              return (
                 <Card key={q.id} padding="none">
                   <QuestionCard
                     q={q}
                     answers={answers}
                     update={update}
                     setField={setField}
-                    answered={false}
-                    onCollapse={() => collapse(q.id)}
+                    answered={ans}
+                    onClear={ans ? () => clearQuestion(q) : undefined}
+                    onCollapse={!ans ? () => collapse(q.id) : undefined}
                   />
                 </Card>
-              ) : (
-                <button
-                  key={q.id}
-                  type="button"
-                  onClick={() => expand(q.id)}
-                  className="flex w-full items-center justify-between gap-3 rounded-lg border border-neutral-200 bg-white px-3 py-2.5 text-left transition-colors hover:border-neutral-300 hover:bg-neutral-50"
-                >
-                  <span className="text-sm font-semibold text-neutral-700">{q.label}</span>
-                  <span className="text-xs text-neutral-400">{q.hint}</span>
-                </button>
-              ),
-            )}
-          </div>
-        )}
-      </Section>
+              );
+            }
+            return (
+              <button
+                key={q.id}
+                type="button"
+                onClick={() => expand(q.id)}
+                className="flex w-full items-center justify-between gap-3 rounded-lg border border-neutral-200 bg-white px-3 py-2.5 text-left transition-colors hover:border-neutral-300 hover:bg-neutral-50"
+              >
+                <span className="text-sm font-semibold text-neutral-700">{q.label}</span>
+                <span className="text-xs text-neutral-400">{q.hint}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }

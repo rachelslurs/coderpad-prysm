@@ -60,7 +60,7 @@ function detailPhrase(detailLayout?: string): string | null {
   switch (detailLayout) {
     case "Right-side pane (desktop)":
       return "a right-side pane";
-    case "Separate screen (mobile)":
+    case "Separate screen":
       return "a separate screen";
     default:
       return null; // "Skip" or unset
@@ -78,11 +78,11 @@ function lead(a: Answers): Block {
   const layout = deviceLayout(a.device);
   const density = densityLine(a.count);
   const bullets = [
-    layout && `- Layout: ${layout}`,
+    layout && `- Layout: ${layout}${a.deviceDetail.trim() ? `. ${a.deviceDetail.trim()}` : ""}`,
     "- A sticky status header carrying shift-long status (facility, clock-in, sync).",
     "- A pinned 'Needs attention' cluster that does NOT scroll, this is the triage surface.",
     "- Below it, the full assignment roster, scrollable.",
-    density && `- ${density}`,
+    density && `- ${density}${a.countDetail.trim() ? ` ${a.countDetail.trim()}` : ""}`,
   ].filter(Boolean) as string[];
 
   const text = [
@@ -115,6 +115,7 @@ function fu2(a: Answers): Block | null {
   const text = sentences(
     `On each resident, always show ${scan || SCAN_LINE_DEFAULT} as the primary scan line, then age/sex and task progress as secondary.`,
     photoLine(a.photo),
+    a.photoDetail.trim() || false,
     "Render risk flags, admit/discharge, and active alerts ONLY when present, as chips using icon + text + color, never color alone (accessibility, glove-glance). Reuse the existing chip/badge component.",
   );
   return { id: "fu2", title: "Follow-up 2 · Resident card content", text };
@@ -133,9 +134,11 @@ function fu3(a: Answers): Block | null {
 function fu4(a: Answers): Block | null {
   const phrase = detailPhrase(a.detailLayout);
   if (!phrase) return null;
-  const text =
-    `Clicking a resident opens their detail (${phrase}) with carryover from last shift and quick actions for Vitals, Meals, ADLs. ` +
-    "Keep documentation OFF the overview, the overview decides WHO, the detail documents WHAT. Inputs are structured only (numeric/predefined, no freeform). Do NOT pre-fill measured values with defaults, show the last reading as reference next to an empty field, never inside it. Flag implausible or unchanged values rather than adding a blanket 'did you measure this?' confirm gate.";
+  const text = sentences(
+    `Clicking a resident opens their detail (${phrase}) with carryover from last shift and quick actions for Vitals, Meals, ADLs.`,
+    "Keep documentation OFF the overview, the overview decides WHO, the detail documents WHAT. Inputs are structured only (numeric/predefined, no freeform). Do NOT pre-fill measured values with defaults, show the last reading as reference next to an empty field, never inside it. Flag implausible or unchanged values rather than adding a blanket 'did you measure this?' confirm gate.",
+    a.detailLayoutDetail.trim() || false,
+  );
   return { id: "fu4", title: "Follow-up 4 · Resident detail", text };
 }
 
