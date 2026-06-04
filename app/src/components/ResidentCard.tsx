@@ -1,8 +1,10 @@
 import { Avatar, Badge, TaskProgress } from "@prysm/design-system";
 import { Clock } from "lucide-react";
 import type { Patient } from "../../data/patients";
+import { doneCount } from "../../data/careTasks";
 import { formatRoom } from "../lib/format";
 import { isStale, progressTone, updatedAgo } from "../lib/residentDisplay";
+import { useShift } from "../state/shiftContext";
 import CareIconRow from "./CareIconRow";
 
 type ResidentCardProps = {
@@ -18,7 +20,9 @@ type ResidentCardProps = {
 // Photo enlarges on hover/focus; the full name is exposed on avatar hover for
 // accessibility (initials fallback when there's no photo).
 export default function ResidentCard({ patient, onPress }: ResidentCardProps) {
+  const { logEntries } = useShift();
   const stale = isStale(patient);
+  const done = doneCount(patient, logEntries);
 
   return (
     <button
@@ -43,11 +47,11 @@ export default function ResidentCard({ patient, onPress }: ResidentCardProps) {
         </div>
         {patient.tasksTotal > 0 && (
           <TaskProgress
-            value={patient.tasksDone}
+            value={done}
             total={patient.tasksTotal}
             size={44}
-            tone={progressTone(patient)}
-            label={`Care tasks: ${patient.tasksDone} of ${patient.tasksTotal} done`}
+            tone={progressTone(done, patient.tasksTotal)}
+            label={`Care tasks: ${done} of ${patient.tasksTotal} done`}
           />
         )}
       </div>
