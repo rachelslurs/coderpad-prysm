@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Button } from "react-aria-components";
 import { ChevronRight } from "lucide-react";
+import { Box } from "../Box";
 import type { Tone } from "../types";
 
 // Leading status accent bar — color paired with the status badge in `badges`,
@@ -45,7 +46,10 @@ export default function EntityCard({
   onPress,
   className = "",
 }: EntityCardProps) {
-  const surface = `relative flex w-full items-center gap-3.5 overflow-hidden border border-neutral-200 bg-white p-4 text-left shadow-sm ${className}`;
+  // Box supplies the padding + 1px border; EntityCard adds the surface color,
+  // layout, and (when clickable) interaction styling on top.
+  const surface =
+    `relative flex w-full items-center gap-3.5 overflow-hidden border-neutral-200 bg-white text-left shadow-sm ${className}`.trim();
 
   const inner = (
     <>
@@ -85,14 +89,20 @@ export default function EntityCard({
 
   if (onPress) {
     return (
-      <Button
+      <Box
+        as={Button}
+        padding={4}
         onPress={onPress}
         className={`${surface} cursor-pointer outline-none transition-colors hover:bg-neutral-50 data-[focus-visible]:ring-[3px] data-[focus-visible]:ring-inset data-[focus-visible]:ring-accent-600/35`}
       >
         {inner}
-      </Button>
+      </Box>
     );
   }
 
-  return <div className={surface}>{inner}</div>;
+  return (
+    <Box padding={4} className={surface}>
+      {inner}
+    </Box>
+  );
 }
