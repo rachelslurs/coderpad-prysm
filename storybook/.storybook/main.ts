@@ -14,6 +14,24 @@ const config: StorybookConfig = {
     name: getAbsolutePath("@storybook/react-vite"),
     options: {},
   },
+  // Use the TypeScript-compiler docgen instead of the default `react-docgen`.
+  // The default is "much faster but incomplete" (per Storybook's TS-config docs)
+  // and can't extract JSDoc from complex prop types — e.g. Button's
+  // `{…} & ButtonHTMLAttributes & { [`data-${string}`]: … }` intersection came
+  // back with empty prop descriptions through the MCP. The TS extractor resolves
+  // intersections/inherited types and reads JSDoc reliably (also needed for this
+  // monorepo's multi-package components consumed as source).
+  typescript: {
+    reactDocgen: "react-docgen-typescript",
+    reactDocgenTypescriptOptions: {
+      shouldExtractLiteralValuesFromEnum: true,
+      shouldRemoveUndefinedFromOptional: true,
+      // Storybook's documented default filter: keep each component's own API,
+      // drop props inherited from node_modules (DOM/react-aria attributes).
+      propFilter: (prop) =>
+        prop.parent ? !/node_modules/.test(prop.parent.fileName) : true,
+    },
+  },
 };
 
 export default config;
