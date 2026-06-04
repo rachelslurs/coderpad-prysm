@@ -2,6 +2,7 @@ import { AppBar, Button, EmptyState, SyncStatus } from "@prysm/design-system";
 import {
   Bell,
   ClipboardList,
+  Clock,
   LayoutGrid,
   Settings,
   Users,
@@ -10,6 +11,7 @@ import {
 import type { Patient } from "../../data/patients";
 import { effectiveRoster, type AssignmentItem } from "../lib/assignment";
 import { rosterItems } from "../lib/triage";
+import { formatClock, useShift } from "../state/shiftContext";
 import ResidentCard from "./ResidentCard";
 import ResidentSearch from "./ResidentSearch";
 
@@ -55,6 +57,7 @@ export default function CnaAssignmentView({
   onOpenPatient,
   onReviewAssignment,
 }: CnaAssignmentViewProps) {
+  const { clockedInAt } = useShift();
   const all = rosterItems(effectiveRoster(items));
   const pending = all.length === 0;
   const assignedIds = new Set(items.map((i) => i.patient.id));
@@ -69,7 +72,16 @@ export default function CnaAssignmentView({
         <NavButton icon={Users} label="Residents" />
         <NavButton icon={ClipboardList} label="Tasks" />
         <NavButton icon={Bell} label="Alerts" />
-        <div className="mt-auto">
+        <div className="mt-auto flex flex-col items-center gap-3">
+          {clockedInAt && (
+            <div
+              title={`Clocked in at ${formatClock(clockedInAt)}`}
+              className="flex flex-col items-center gap-0.5 text-neutral-400"
+            >
+              <Clock aria-hidden="true" className="h-5 w-5" />
+              <span className="text-[10px] font-bold tabular-nums">{formatClock(clockedInAt)}</span>
+            </div>
+          )}
           <NavButton icon={Settings} label="Settings" />
         </div>
       </nav>
