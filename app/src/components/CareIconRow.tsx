@@ -28,32 +28,43 @@ const CONTINENCE: Record<Continence, { icon: LucideIcon; label: string }> = {
   incontinent: { icon: Droplets, label: "Incontinent — needs changing" },
 };
 
+const SIZE = {
+  md: { gap: "gap-1.5", slot: "h-6 w-6", icon: "h-[18px] w-[18px]", badge: "h-3.5 min-w-[14px] px-[3px] text-[9px]" },
+  lg: { gap: "gap-2.5", slot: "h-8 w-8", icon: "h-6 w-6", badge: "h-4 min-w-4 px-1 text-[10px]" },
+} as const;
+
+type Size = keyof typeof SIZE;
+
 function Slot({
   icon: Icon,
   label,
   muted = false,
   badge,
+  size,
 }: {
   icon: LucideIcon | null;
   label?: string;
   muted?: boolean;
-  /** Small number badge on the icon (e.g. people required for a transfer). */
   badge?: number;
+  size: Size;
 }) {
+  const s = SIZE[size];
   // Fixed-width slot keeps the three positions aligned even when a slot is empty.
-  if (!Icon) return <span aria-hidden="true" className="h-6 w-6 flex-none" />;
+  if (!Icon) return <span aria-hidden="true" className={`flex-none ${s.slot}`} />;
   return (
     <span
       role="img"
       aria-label={label}
       title={label}
-      className={`relative inline-flex h-6 w-6 flex-none items-center justify-center rounded ${
+      className={`relative inline-flex flex-none items-center justify-center rounded ${s.slot} ${
         muted ? "text-neutral-400" : "text-neutral-600"
       }`}
     >
-      <Icon aria-hidden="true" className="h-[18px] w-[18px]" />
+      <Icon aria-hidden="true" className={s.icon} />
       {badge != null && (
-        <span className="absolute -bottom-1 -right-1 grid h-3.5 min-w-[14px] place-items-center rounded-full bg-neutral-700 px-[3px] text-[9px] font-bold leading-none text-white">
+        <span
+          className={`absolute -bottom-1 -right-1 grid place-items-center rounded-full bg-neutral-700 font-bold leading-none text-white ${s.badge}`}
+        >
           {badge}
         </span>
       )}
@@ -64,23 +75,20 @@ function Slot({
 const riskLabel = (p: Patient): string =>
   [p.fallRisk && "High fall risk", p.wanderer && "Elopement risk"].filter(Boolean).join(" · ");
 
-export default function CareIconRow({ patient }: { patient: Patient }) {
+export default function CareIconRow({ patient, size = "md" }: { patient: Patient; size?: Size }) {
   const highRisk = patient.fallRisk || patient.wanderer;
   const transfer = TRANSFER[patient.transfer];
   const continence = CONTINENCE[patient.continence];
+  const people = patient.transfer === "two-person" || patient.transfer === "mechanical-lift" ? 2 : undefined;
 
   return (
-    <div className="flex items-center gap-1.5">
+    <div className={`flex items-center ${SIZE[size].gap}`}>
       {/* 1 — high-risk (empty slot when none) */}
-      <Slot icon={highRisk ? TriangleAlert : null} label={highRisk ? riskLabel(patient) : undefined} />
+      <Slot icon={highRisk ? TriangleAlert : null} label={highRisk ? riskLabel(patient) : undefined} size={size} />
       {/* 2 — transfer */}
-      <Slot icon={transfer.icon} label={transfer.label} muted={patient.transfer === "independent"} />
+      <Slot icon={transfer.icon} label={transfer.label} muted={patient.transfer === "independent"} badge={people} size={size} />
       {/* 3 — continence */}
-      <Slot
-        icon={continence.icon}
-        label={continence.label}
-        muted={patient.continence === "continent"}
-      />
+      <Slot icon={continence.icon} label={continence.label} muted={patient.continence === "continent"} size={size} />
     </div>
   );
 }
