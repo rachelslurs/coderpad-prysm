@@ -17,14 +17,22 @@ page is the cross-reference for **confusable pairs**.
 | Perform an action on click/tap | **Button** | Badge (looks similar, not clickable) |
 | Show a status / category / count label | **Badge** | IconTile, Button |
 | Capture one of a small fixed set | **Segmented** | Toggle (binary), Stepper (numeric) |
+| Capture one of a longer list | **Select** | Segmented (small fixed set) |
 | Capture a binary on/off state | **Toggle** | Segmented |
-| Capture a number | **Stepper** | Segmented (one-of-N) |
+| Capture a number | **Stepper** | TextInput (freeform) |
+| Capture freeform short text | **TextInput** | Stepper, Select, Segmented |
+| Capture freeform multi-line text | **TextArea** | TextInput |
+| Label a form control (+ reference value) | **FormField** | Field (read-only) |
 | Show a labelled value (read-only) | **Field** | IconField |
 | Show a labelled value with a leading icon | **IconField** | Field, IconTile |
 | Show a standalone tinted icon | **IconTile** | Badge, Avatar |
 | Represent a person | **Avatar** | IconTile |
 | Group content on a bordered surface | **Card** | Section |
-| Group content under an eyebrow heading | **Section** | Card |
+| Group content under an eyebrow heading | **Section** | Card, AppBar |
+| Show a record as a featured card | **EntityCard** | EntityRow, Card |
+| Show records in a dense, scannable list | **EntityRow** | EntityCard |
+| Show save / sync / connectivity state | **SyncStatus** | Badge |
+| Provide a top bar / page chrome | **AppBar** | Section |
 | Show determinate progress (3 / 6) | **TaskProgress** | Skeleton |
 | Show loading placeholders | **Skeleton** | EmptyState, TaskProgress |
 | Show a "no results" message | **EmptyState** | Skeleton |
@@ -78,3 +86,42 @@ All three render as small rounded elements, but they mean different things:
 - **Skeleton** — content is *loading* (indeterminate); hold the layout.
 - **EmptyState** — the load finished and there's *nothing* to show.
 - **TaskProgress** — *determinate* progress toward a known total (3 / 6).
+
+### EntityCard vs EntityRow
+
+The two render the *same data* (avatar + title + meta + badges + a trailing slot);
+pick by density:
+
+- **EntityCard** — the featured, attention-getting density: a card grid, a cluster,
+  or a detail header. Pass `onPress` to make the whole card a button.
+- **EntityRow** — the compact, list density: rosters and scannable lists. Owns no
+  divider — stack rows in a `divide-y` list. Using both for the same record keeps it
+  looking identical across overview, roster, and header.
+
+### Freeform inputs vs structured controls
+
+- **Prefer a structured control** when the value has a known shape: number →
+  **Stepper**, one-of-small-set → **Segmented**, one-of-many → **Select**, boolean →
+  **Toggle**. They're faster and keep data clean.
+- **TextInput** / **TextArea** — only for genuinely freeform text (a single line vs.
+  multi-line prose).
+- **Select vs Segmented** — both pick exactly one. Use **Segmented** for a small fixed
+  set worth showing inline; use **Select** when the list is long or should collapse.
+
+### FormField vs Field
+
+- **FormField** — wraps an *interactive* control with a label (and an optional "last
+  value" reference). Stack fields in a `divide-y` list.
+- **Field** — *read-only* label-over-value display. Not for inputs.
+
+### SyncStatus vs Badge
+
+- **SyncStatus** — a pre-mapped Badge for `saved` / `saving` / `queued` / `failed`
+  save/connectivity state, with a spinner for in-progress.
+- **Badge** — any other labelled status, category, or flag. (SyncStatus is built on it.)
+
+### AppBar vs Section
+
+- **AppBar** — the top chrome of a page/app: a slot-based bar (`start` / center /
+  `end`), dark or light. Compose nav, menus, or a SyncStatus into the slots.
+- **Section** — an *in-page* labelled group under an eyebrow heading. Not page chrome.

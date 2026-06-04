@@ -41,9 +41,14 @@ mid-task, so a constrained control beats a text box for those values:
 
 | You need to capture… | Use | Prefer over |
 |---|---|---|
-| A number (vital, count, 0–10 scale) | **Stepper** | a freeform text field |
-| Exactly one of a small fixed set | **Segmented** | a `Select` dropdown |
+| A number (vital, count, 0–10 scale) | **Stepper** | **TextInput** (freeform) |
+| Exactly one of a small fixed set | **Segmented** | **Select** (better for longer lists) |
 | A binary on/off state | **Toggle** | a checkbox-as-text |
+
+Freeform inputs do exist — **TextInput**, **TextArea**, and **Select** — for genuinely
+unstructured or long-list values; reach for them only when a structured control
+doesn't fit. Wrap any control in **FormField** to give it a label (and an optional
+"last value" reference).
 
 **Remaining deliberate gap:** there is no dedicated **multi-select** control — for
 several independent on/off states, compose multiple **Toggle**s (one per option).
@@ -53,14 +58,20 @@ several independent on/off states, compose multiple **Toggle**s (one per option)
 ## The catalog at a glance
 
 - **Actions** — **Button** (the only interactive action primitive).
-- **Forms** — **Segmented** (one-of-N), **Toggle** (binary), **Stepper** (numeric).
+- **Forms** — **Segmented** (one-of-N), **Toggle** (binary), **Stepper** (numeric),
+  **Select** (one-of-many), **TextInput** / **TextArea** (freeform text),
+  **FormField** (labels a control + optional reference value).
 - **Data Display** — **Badge**, **Card**, **Section**, **Field**, **IconField**,
-  **IconTile**, **Avatar**, **TaskProgress**, **ColumnHeader**, **SortIndicator**.
-- **Feedback** — **Skeleton** (loading), **EmptyState** (no results).
+  **IconTile**, **Avatar**, **TaskProgress**, **ColumnHeader**, **SortIndicator**,
+  **EntityCard** / **EntityRow** (a record at card- and list-density).
+- **Feedback** — **Skeleton** (loading), **EmptyState** (no results),
+  **SyncStatus** (save / sync state).
 - **Overlays** — **OverlayPanel** (covering detail/drawer).
+- **Navigation** — **AppBar** (minimal top-bar shell).
 - **Keyboard** — **Kbd** (shortcut hints).
 - **Tokens** — Color Tones.
 
 Confusable pairs (Badge vs IconTile vs Button-as-chip, Field vs IconField,
-Card vs Section, Segmented vs multi-select) are disambiguated in
+Card vs Section, EntityCard vs EntityRow, TextInput vs Stepper vs Select,
+Segmented vs multi-select) are disambiguated in
 **[Choosing a component](?path=/docs/choosing-a-component--docs)**.
