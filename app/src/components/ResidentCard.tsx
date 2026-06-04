@@ -3,7 +3,7 @@ import { Clock } from "lucide-react";
 import type { Patient } from "../../data/patients";
 import { doneCount } from "../../data/careTasks";
 import { formatRoom } from "../lib/format";
-import { isStale, progressTone, updatedAgo } from "../lib/residentDisplay";
+import { isStale, progressTone } from "../lib/residentDisplay";
 import { useShift } from "../state/shiftContext";
 import CareIconRow from "./CareIconRow";
 
@@ -56,25 +56,21 @@ export default function ResidentCard({ patient, onPress }: ResidentCardProps) {
         )}
       </div>
 
-      <CareIconRow patient={patient} />
-
-      <div className="mt-auto flex items-center justify-between gap-2 pt-1 text-xs">
-        {patient.timeSensitive ? (
-          <span className="inline-flex items-center gap-1 font-semibold text-neutral-700">
-            <Clock aria-hidden="true" className="h-3.5 w-3.5" />
-            {patient.timeSensitive.label} · {patient.timeSensitive.due}
-          </span>
-        ) : (
-          <span aria-hidden="true" />
-        )}
-        <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-neutral-400">
+      <div className="mt-auto flex items-end justify-between gap-2 pt-2">
+        <CareIconRow patient={patient} size="lg" />
+        <div className="flex flex-col items-end gap-1">
           {stale && (
             <Badge tone="warning" size="sm">
               Stale
             </Badge>
           )}
-          Updated {updatedAgo(patient)}
-        </span>
+          {patient.timeSensitive && (
+            <span className="inline-flex items-center gap-1 text-right text-xs font-semibold text-neutral-700">
+              <Clock aria-hidden="true" className="h-3.5 w-3.5 flex-none" />
+              {patient.timeSensitive.label} · {patient.timeSensitive.due}
+            </span>
+          )}
+        </div>
       </div>
     </button>
   );
