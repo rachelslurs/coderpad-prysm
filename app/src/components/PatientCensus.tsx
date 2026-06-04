@@ -1,7 +1,13 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { PATIENTS, type Patient } from "../../data/patients.ts";
 import { Search, X, Eye, EyeOff } from "lucide-react";
-import { ColumnHeader, EmptyState, toInitials } from "@prysm/design-system";
+import {
+  AppBar,
+  ColumnHeader,
+  EmptyState,
+  TextInput,
+  toInitials,
+} from "@prysm/design-system";
 import StatusBadge from "./StatusBadge";
 import PatientDetail from "./PatientDetail";
 import { formatRoom } from "../lib/format";
@@ -160,18 +166,40 @@ export default function PatientCensus() {
 
   return (
     <>
-      <header className="grid flex-none grid-cols-[1fr_auto] items-center gap-4 border-b border-neutral-800 bg-neutral-900 px-6 py-4 shadow-md md:grid-cols-3">
-        <h1 className="hidden items-baseline gap-2 whitespace-nowrap text-xl font-semibold tracking-normal text-white/90 md:inline-flex">
-          1 North Census
-        </h1>
-
-        <div className="group relative justify-self-start md:justify-self-center">
-            <Search
-              aria-hidden="true"
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400 transition-colors group-focus-within:text-neutral-200"
-            />
-            <input
-              ref={searchInputRef}
+      <AppBar
+        className="flex-none border-b border-neutral-800 shadow-md"
+        start={
+          <h1 className="hidden items-baseline gap-2 whitespace-nowrap text-xl font-semibold tracking-normal text-white/90 md:inline-flex">
+            1 North Census
+          </h1>
+        }
+        end={
+          <button
+            type="button"
+            onClick={() => setHideNames(!hideNames)}
+            aria-pressed={hideNames}
+            aria-label={hideNames ? "Privacy on" : "Privacy off"}
+            className={`inline-flex min-h-[42px] items-center gap-2 whitespace-nowrap rounded border px-3 py-2 text-base font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 ${
+              hideNames
+                ? "border-teal-500 bg-teal-400 text-white hover:bg-teal-400"
+                : "border-neutral-700 bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
+            }`}
+          >
+            {hideNames ? (
+              <EyeOff aria-hidden="true" className="h-4 w-4" />
+            ) : (
+              <Eye aria-hidden="true" className="h-4 w-4" />
+            )}
+            <span className="hidden md:inline">
+              {hideNames ? "Privacy on" : "Privacy off"}
+            </span>
+          </button>
+        }
+      >
+        <div className="flex flex-1 justify-center">
+          <div className="relative w-80 max-w-full">
+            <TextInput
+              tone="dark"
               type="text"
               aria-label="Search by patient name (shortcut: press / from anywhere)"
               placeholder="Find patient..."
@@ -181,62 +209,44 @@ export default function PatientCensus() {
               // debounce (150-250ms) + AbortController the day this becomes a
               // server query or PATIENTS grows past a few hundred — at that
               // point cost shifts from compute to network thrash.
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onFocus={() => {
-                setSearchFocused(true);
+              onChange={setSearchQuery}
+              onFocusChange={(focused) => {
+                setSearchFocused(focused);
                 // Focusing search is an intent shift back to the roster — close
                 // the detail overlay if it's open. Null out the row-restore ref
                 // first so the close effect doesn't steal focus from the input.
-                if (selectedPatient) {
+                if (focused && selectedPatient) {
                   lastFocusedRowRef.current = null;
                   setSelectedPatient(null);
                 }
               }}
-              onBlur={() => setSearchFocused(false)}
-              className="w-80 rounded border border-neutral-700 bg-neutral-800 py-2 pl-10 pr-9 text-base text-neutral-100 placeholder:text-neutral-400 focus:border-neutral-400 focus:bg-neutral-950 focus:text-white focus:outline-none focus:ring-2 focus:ring-neutral-500"
+              inputRef={searchInputRef}
+              icon={Search}
+              trailing={
+                searchQuery ? (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    aria-label="Clear search"
+                    className="rounded text-neutral-400 hover:text-neutral-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                ) : (
+                  !searchFocused && (
+                    <kbd
+                      aria-hidden="true"
+                      className="pointer-events-none hidden select-none rounded border border-neutral-700 bg-neutral-800/80 px-1.5 py-0.5 font-mono text-xs font-bold tracking-widest text-neutral-400 sm:inline-block"
+                    >
+                      /
+                    </kbd>
+                  )
+                )
+              }
             />
-            {searchQuery ? (
-              <button
-                type="button"
-                onClick={() => setSearchQuery("")}
-                aria-label="Clear search"
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded text-neutral-400 hover:text-neutral-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            ) : (
-              !searchFocused && (
-                <kbd
-                  aria-hidden="true"
-                  className="pointer-events-none absolute right-2 top-1/2 hidden -translate-y-1/2 select-none rounded border border-neutral-700 bg-neutral-800/80 px-1.5 py-0.5 font-mono text-xs font-bold tracking-widest text-neutral-400 sm:inline-block"
-                >
-                  /
-                </kbd>
-              )
-            )}
+          </div>
         </div>
-
-        <button
-          type="button"
-          onClick={() => setHideNames(!hideNames)}
-          aria-pressed={hideNames}
-          aria-label={hideNames ? "Privacy on" : "Privacy off"}
-          className={`inline-flex min-h-[42px] items-center gap-2 justify-self-end whitespace-nowrap rounded border px-3 py-2 text-base font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 ${
-            hideNames
-              ? "border-teal-500 bg-teal-400 text-white hover:bg-teal-400"
-              : "border-neutral-700 bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
-          }`}
-        >
-          {hideNames ? (
-            <EyeOff aria-hidden="true" className="h-4 w-4" />
-          ) : (
-            <Eye aria-hidden="true" className="h-4 w-4" />
-          )}
-          <span className="hidden md:inline">
-            {hideNames ? "Privacy on" : "Privacy off"}
-          </span>
-        </button>
-      </header>
+      </AppBar>
 
       <main className="relative flex flex-1 overflow-hidden">
         <div className="flex-1 overflow-auto">

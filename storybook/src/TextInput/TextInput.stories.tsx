@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { Search } from "lucide-react";
 import TextInput from "./TextInput";
 
 const meta = {
@@ -48,4 +49,53 @@ export const Invalid: Story = {
 
 export const Disabled: Story = {
   args: { label: "Facility", defaultValue: "Cedar Ridge SNF", isDisabled: true },
+};
+
+// Leading icon — adornment inside the field.
+export const WithIcon: Story = {
+  args: {
+    label: undefined,
+    "aria-label": "Search",
+    placeholder: "Search…",
+    icon: Search,
+  },
+};
+
+// Trailing slot — the consumer composes a clear button, shortcut hint, etc.
+export const Clearable: Story = {
+  args: {
+    label: undefined,
+    "aria-label": "Search",
+    placeholder: "Search…",
+    icon: Search,
+    defaultValue: "Margaret",
+    trailing: (
+      <button
+        type="button"
+        aria-label="Clear"
+        className="rounded text-neutral-400 hover:text-neutral-600"
+      >
+        ✕
+      </button>
+    ),
+  },
+};
+
+// Dark tone — for command bars (e.g. the census header).
+export const Dark: Story = {
+  parameters: { backgrounds: { default: "dark" } },
+  decorators: [
+    (Story) => (
+      <div className="w-80 rounded-lg bg-neutral-900 p-4">
+        <Story />
+      </div>
+    ),
+  ],
+  args: {
+    label: undefined,
+    "aria-label": "Search",
+    placeholder: "Find patient…",
+    tone: "dark",
+    icon: Search,
+  },
 };
