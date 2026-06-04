@@ -45,6 +45,7 @@ export default function AssignmentSelection({ onConfirm }: AssignmentSelectionPr
   const [assignmentId, setAssignmentId] = useState(DEFAULT_ASSIGNMENT_ID);
   const [items, setItems] = useState<AssignmentItem[]>(buildInitialAssignment);
   const [editResidents, setEditResidents] = useState(false);
+  const [showFriction, setShowFriction] = useState(false);
   const [dialog, setDialog] = useState<Dialog>(null);
   const [reason, setReason] = useState("");
   const [addId, setAddId] = useState<string | null>(null);
@@ -65,6 +66,10 @@ export default function AssignmentSelection({ onConfirm }: AssignmentSelectionPr
     setDialog(null);
     setReason("");
     setAddId(null);
+  };
+
+  const closeFriction = () => {
+    setShowFriction(false);
     setAcknowledged(false);
   };
 
@@ -194,7 +199,7 @@ export default function AssignmentSelection({ onConfirm }: AssignmentSelectionPr
           <div className="mt-4">
             <button
               type="button"
-              onClick={() => setEditResidents((v) => !v)}
+              onClick={() => (editResidents ? setEditResidents(false) : setShowFriction(true))}
               aria-expanded={editResidents}
               className="inline-flex items-center gap-1.5 rounded text-sm font-semibold text-neutral-500 hover:text-neutral-700 focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-600"
             >
@@ -202,7 +207,7 @@ export default function AssignmentSelection({ onConfirm }: AssignmentSelectionPr
                 aria-hidden="true"
                 className={`h-4 w-4 transition-transform ${editResidents ? "rotate-90" : ""}`}
               />
-              Need to add or remove a specific resident?
+              {editResidents ? "Done editing residents" : "Need to add or remove a specific resident?"}
             </button>
 
             {editResidents && (
@@ -288,14 +293,6 @@ export default function AssignmentSelection({ onConfirm }: AssignmentSelectionPr
                 selectedKey={reason || undefined}
                 onSelectionChange={(key) => setReason(String(key))}
               />
-              <div className="rounded-md border border-neutral-200 bg-neutral-50 p-3">
-                <Toggle isSelected={acknowledged} onChange={setAcknowledged}>
-                  <span className="text-sm font-semibold text-neutral-700">
-                    I understand this goes to my supervisor for review, and I stay responsible for this
-                    resident until it&rsquo;s approved.
-                  </span>
-                </Toggle>
-              </div>
             </div>
 
             <div className="mt-5 flex justify-end gap-2">
@@ -304,10 +301,52 @@ export default function AssignmentSelection({ onConfirm }: AssignmentSelectionPr
               </Button>
               <Button
                 tone={dialog.kind === "remove" ? "danger" : "accent"}
-                disabled={!reason || !acknowledged || (dialog.kind === "add" && !addId)}
+                disabled={!reason || (dialog.kind === "add" && !addId)}
                 onClick={dialog.kind === "remove" ? () => requestRemoval(dialog.patient) : requestAddition}
               >
                 Send request to supervisor
+              </Button>
+            </div>
+          </Card>
+        </OverlayPanel>
+      )}
+
+      {/* Friction gate — acknowledged once, up front, before any add/remove is offered. */}
+      {showFriction && (
+        <OverlayPanel
+          onClose={closeFriction}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Before you change your residents"
+          className="items-center justify-center bg-neutral-950/50 p-6 backdrop-blur-sm"
+        >
+          <Card className="w-full max-w-md">
+            <h2 className="text-xl font-extrabold text-neutral-900">Before you change your residents</h2>
+            <p className="mt-1 text-sm text-neutral-600">
+              Switching to a different pre-set assignment is usually the better fix. Editing individual
+              residents goes to your supervisor for review and{" "}
+              <span className="font-semibold text-neutral-800">won&rsquo;t delay your shift</span>.
+            </p>
+            <div className="mt-4 rounded-md border border-neutral-200 bg-neutral-50 p-3">
+              <Toggle isSelected={acknowledged} onChange={setAcknowledged}>
+                <span className="text-sm font-semibold text-neutral-700">
+                  I understand this goes to my supervisor for review.
+                </span>
+              </Toggle>
+            </div>
+            <div className="mt-5 flex justify-end gap-2">
+              <Button variant="ghost" tone="neutral" onClick={closeFriction}>
+                Cancel
+              </Button>
+              <Button
+                tone="accent"
+                disabled={!acknowledged}
+                onClick={() => {
+                  setEditResidents(true);
+                  closeFriction();
+                }}
+              >
+                Continue
               </Button>
             </div>
           </Card>
