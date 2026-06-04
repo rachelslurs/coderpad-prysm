@@ -1,6 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
+import type { ReactNode } from "react";
 import { Card, Segmented, TextArea } from "@prysm/design-system";
-import { CLEARED, QUESTIONS, isAnswered, type Answers, type Question } from "../answers";
+import {
+  CLEARED,
+  QUESTIONS,
+  STAGES,
+  isAnswered,
+  isVisible,
+  type Answers,
+  type Question,
+} from "../answers";
 import QuestionCard from "./QuestionCard";
 
 type Props = {
@@ -13,9 +22,9 @@ type SortMode = "fixed" | "answered";
 const SORT_KEY = "prysm:prompt-builder:sort";
 const ORDER_OPTIONS = ["In order", "Answered first"];
 
-// Left pane: the always-visible catch-all, then the question list. By default
-// questions stay in a FIXED order — answering one never makes it jump. The
-// "Answered first" toggle opts into grouping answered questions to the top.
+// Left pane: the always-visible catch-all, then the stage-grouped question list.
+// Stage headings and their order are FIXED so the form mirrors the interview
+// flow. The "Answered first" toggle only reorders questions WITHIN a stage.
 export default function QuestionsPane({ answers, update, setField }: Props) {
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
   const [sortMode, setSortMode] = useState<SortMode>(() => {
@@ -33,15 +42,10 @@ export default function QuestionsPane({ answers, update, setField }: Props) {
     }
   }, [sortMode]);
 
-  const answeredCount = QUESTIONS.filter((q) => isAnswered(q, answers)).length;
-
-  const ordered = useMemo(() => {
-    if (sortMode === "fixed") return QUESTIONS;
-    return [
-      ...QUESTIONS.filter((q) => isAnswered(q, answers)),
-      ...QUESTIONS.filter((q) => !isAnswered(q, answers)),
-    ];
-  }, [sortMode, answers]);
+  // Only the questions currently revealed (e.g. the Assignment Selection
+  // sub-questions appear once the opt-in toggle is on) count toward progress.
+  const visible = useMemo(() => QUESTIONS.filter((q) => isVisible(q, answers)), [answers]);
+  const answeredCount = visible.filter((q) => isAnswered(q, answers)).length;
 
   const expand = (id: string) => setExpanded((s) => new Set(s).add(id));
   const collapse = (id: string) =>
@@ -55,6 +59,48 @@ export default function QuestionsPane({ answers, update, setField }: Props) {
     setField(q.id, CLEARED[q.id]);
     if (q.detailField) setField(q.detailField, "");
     collapse(q.id);
+  };
+
+  // Questions in one stage, optionally floating answered ones to the top.
+  const stageQuestions = (title: string): Question[] => {
+    const inStage = visible.filter((q) => q.group === title);
+    if (sortMode === "fixed") return inStage;
+    return [
+      ...inStage.filter((q) => isAnswered(q, answers)),
+      ...inStage.filter((q) => !isAnswered(q, answers)),
+    ];
+  };
+
+  const renderQuestion = (q: Question): ReactNode => {
+    const ans = isAnswered(q, answers);
+    // A toggle is always shown open — it's the gate for its stage, never collapsed.
+    const alwaysOpen = q.kind === "toggle";
+    if (ans || alwaysOpen || expanded.has(q.id)) {
+      return (
+        <Card key={q.id} padding="none">
+          <QuestionCard
+            q={q}
+            answers={answers}
+            update={update}
+            setField={setField}
+            answered={ans}
+            onClear={ans && !alwaysOpen ? () => clearQuestion(q) : undefined}
+            onCollapse={!ans && !alwaysOpen ? () => collapse(q.id) : undefined}
+          />
+        </Card>
+      );
+    }
+    return (
+      <button
+        key={q.id}
+        type="button"
+        onClick={() => expand(q.id)}
+        className="flex w-full items-center justify-between gap-3 rounded-lg border border-neutral-200 bg-white px-3 py-2.5 text-left transition-colors hover:border-neutral-300 hover:bg-neutral-50"
+      >
+        <span className="text-sm font-semibold text-neutral-700">{q.label}</span>
+        <span className="text-xs text-neutral-400">{q.hint}</span>
+      </button>
+    );
   };
 
   return (
@@ -71,10 +117,10 @@ export default function QuestionsPane({ answers, update, setField }: Props) {
       <div>
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
           <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">
-            Questions · {answeredCount}/{QUESTIONS.length} answered
+            Questions · {answeredCount}/{visible.length} answered
           </span>
           <Segmented
-            label="Question order"
+            label="Order within stage"
             variant="segmented"
             options={ORDER_OPTIONS}
             value={sortMode === "answered" ? "Answered first" : "In order"}
@@ -82,34 +128,22 @@ export default function QuestionsPane({ answers, update, setField }: Props) {
           />
         </div>
 
-        <div className="flex flex-col gap-2">
-          {ordered.map((q) => {
-            const ans = isAnswered(q, answers);
-            if (ans || expanded.has(q.id)) {
-              return (
-                <Card key={q.id} padding="none">
-                  <QuestionCard
-                    q={q}
-                    answers={answers}
-                    update={update}
-                    setField={setField}
-                    answered={ans}
-                    onClear={ans ? () => clearQuestion(q) : undefined}
-                    onCollapse={!ans ? () => collapse(q.id) : undefined}
-                  />
-                </Card>
-              );
-            }
+        <div className="flex flex-col gap-6">
+          {STAGES.map((stage) => {
+            const qs = stageQuestions(stage.title);
+            if (qs.length === 0) return null;
             return (
-              <button
-                key={q.id}
-                type="button"
-                onClick={() => expand(q.id)}
-                className="flex w-full items-center justify-between gap-3 rounded-lg border border-neutral-200 bg-white px-3 py-2.5 text-left transition-colors hover:border-neutral-300 hover:bg-neutral-50"
-              >
-                <span className="text-sm font-semibold text-neutral-700">{q.label}</span>
-                <span className="text-xs text-neutral-400">{q.hint}</span>
-              </button>
+              <section key={stage.title} className="flex flex-col gap-2">
+                <div className="flex flex-wrap items-baseline gap-2">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-600">
+                    {stage.title}
+                  </h3>
+                  {stage.hint ? (
+                    <span className="text-[11px] text-neutral-400">{stage.hint}</span>
+                  ) : null}
+                </div>
+                {qs.map(renderQuestion)}
+              </section>
             );
           })}
         </div>
