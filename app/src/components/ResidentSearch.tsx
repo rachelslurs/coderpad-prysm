@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Badge, TextInput } from "@prysm/design-system";
+import { useEffect, useRef, useState } from "react";
+import { Badge, Kbd, TextInput } from "@prysm/design-system";
 import { Search, X } from "lucide-react";
 import { PATIENTS, type Patient } from "../../data/patients";
 import ResidentRow from "./ResidentRow";
@@ -9,24 +9,40 @@ type ResidentSearchProps = {
   onSelect: (patient: Patient) => void;
   /** Ids on the CNA's assignment, used to flag off-assignment results. */
   assignedIds: ReadonlySet<Patient["id"]>;
+  /** Fired when "/" is pressed — e.g. return to the assignment view from a chart. */
+  onShortcut?: () => void;
 };
 
 // Find-any-resident search in the status bar. A CNA sometimes documents on
 // someone outside their assignment (logging a meal, a fall they witnessed), so
-// search spans the whole unit — not just the roster. Results reuse the minimal
-// resident row (picture + name + room — the two patient identifiers).
-export default function ResidentSearch({
-  onSelect,
-  assignedIds,
-}: ResidentSearchProps) {
+// search spans the whole unit — not just the roster. Press "/" anywhere to jump
+// to it (skipped while typing in a field).
+export default function ResidentSearch({ onSelect, assignedIds, onShortcut }: ResidentSearchProps) {
   const [query, setQuery] = useState("");
+  const [focused, setFocused] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const q = query.trim().toLowerCase();
   const matches = q
     ? PATIENTS.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) || p.room.toLowerCase().includes(q)
+        (p) => p.name.toLowerCase().includes(q) || p.room.toLowerCase().includes(q)
       ).slice(0, 6)
     : [];
+
+  // "/" jumps to search from anywhere (e.g. back out of a chart to the roster).
+  // Skip when already typing in a field.
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "/") return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+      e.preventDefault();
+      onShortcut?.();
+      inputRef.current?.focus();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [onShortcut]);
 
   const pick = (patient: Patient) => {
     onSelect(patient);
@@ -37,11 +53,13 @@ export default function ResidentSearch({
     <div className="relative w-full max-w-sm">
       <TextInput
         type="text"
-        aria-label="Find any resident to document on"
+        aria-label="Find any resident to document on (shortcut: press /)"
         placeholder="Find any resident…"
         icon={Search}
         value={query}
         onChange={setQuery}
+        inputRef={inputRef}
+        onFocusChange={setFocused}
         trailing={
           query ? (
             <button
@@ -52,6 +70,8 @@ export default function ResidentSearch({
             >
               <X className="h-3.5 w-3.5" />
             </button>
+          ) : !focused ? (
+            <Kbd aria-hidden="true">/</Kbd>
           ) : undefined
         }
       />
