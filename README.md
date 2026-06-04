@@ -2,6 +2,18 @@
 
 React + TypeScript take-home exercise. Renders a patient census with search, sort, and a detail panel.
 
+## The three apps
+
+After `pnpm install`, each app can be viewed on GitHub Pages or run locally:
+
+| App | What it is | Live (GitHub Pages) | Run locally |
+|---|---|---|---|
+| **Patient census** — `@prysm/app` | The take-home app: patient census with search, sort, and a detail panel. | https://rachelslurs.github.io/coderpad-prysm/ | `pnpm dev` → http://localhost:5173/coderpad-prysm/ |
+| **Design system** — `@prysm/design-system` | Storybook catalog of the generic, context-agnostic primitives. | https://rachelslurs.github.io/coderpad-prysm/storybook/ | `pnpm storybook` → http://localhost:6006 |
+| **Interview prompt builder** — `@prysm/prompt-builder` | Standalone interview aid: assembles paste-ready Claude Code prompts as you answer clarifying questions. Fully offline, persists to localStorage. | https://rachelslurs.github.io/coderpad-prysm/prompt-builder/ | `pnpm prompt-builder` → http://localhost:5180 |
+
+All three deploy together from `main` into one GitHub Pages site via [.github/workflows/deploy.yml](.github/workflows/deploy.yml).
+
 ## Stack
 
 - React 19 + TypeScript
@@ -17,6 +29,7 @@ React + TypeScript take-home exercise. Renders a patient census with search, sor
 pnpm install
 pnpm dev          # app dev server (Vite)
 pnpm storybook    # design-system Storybook
+pnpm prompt-builder  # interview prompt builder (Vite, :5180)
 pnpm test         # run all workspace tests once
 pnpm build        # typecheck + build the app and Storybook
 pnpm lint
