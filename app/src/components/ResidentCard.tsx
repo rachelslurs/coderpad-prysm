@@ -1,9 +1,9 @@
-import { Avatar, Badge, TaskProgress } from "@prysm/design-system";
+import { Avatar, TaskProgress } from "@prysm/design-system";
 import { Clock } from "lucide-react";
 import type { Patient } from "../../data/patients";
 import { doneCount } from "../../data/careTasks";
 import { formatRoom } from "../lib/format";
-import { isStale, progressTone } from "../lib/residentDisplay";
+import { progressTone } from "../lib/residentDisplay";
 import { useShift } from "../state/shiftContext";
 import CareIconRow from "./CareIconRow";
 
@@ -21,7 +21,6 @@ type ResidentCardProps = {
 // accessibility (initials fallback when there's no photo).
 export default function ResidentCard({ patient, onPress }: ResidentCardProps) {
   const { logEntries } = useShift();
-  const stale = isStale(patient);
   const done = doneCount(patient, logEntries);
 
   return (
@@ -58,19 +57,12 @@ export default function ResidentCard({ patient, onPress }: ResidentCardProps) {
 
       <div className="mt-auto flex items-end justify-between gap-2 pt-2">
         <CareIconRow patient={patient} size="lg" />
-        <div className="flex flex-col items-end gap-1">
-          {stale && (
-            <Badge tone="warning" size="sm">
-              Stale
-            </Badge>
-          )}
-          {patient.timeSensitive && (
-            <span className="inline-flex items-center gap-1 text-right text-xs font-semibold text-neutral-700">
-              <Clock aria-hidden="true" className="h-3.5 w-3.5 flex-none" />
-              {patient.timeSensitive.label} · {patient.timeSensitive.due}
-            </span>
-          )}
-        </div>
+        {patient.timeSensitive && (
+          <span className="inline-flex items-center gap-1.5 text-right text-sm font-semibold text-neutral-700">
+            <Clock aria-hidden="true" className="h-4 w-4 flex-none" />
+            {patient.timeSensitive.label} · {patient.timeSensitive.due}
+          </span>
+        )}
       </div>
     </button>
   );
