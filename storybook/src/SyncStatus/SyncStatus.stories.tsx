@@ -8,6 +8,19 @@ const meta = {
   title: "Feedback/SyncStatus",
   component: SyncStatus,
   tags: ["autodocs"],
+  parameters: {
+    docs: {
+      description: {
+        component: [
+          "A per-entry **sync indicator**: one redundant-encoding pill (color + icon + label) for `saved` / `saving` / `queued` / `failed`, with an optional trailing note (timestamp, context). A pre-mapped specialisation of `Badge`.",
+          "",
+          "**When to use:** surfacing persistence / connectivity confidence for a single item or in a top bar — ambient, glanceable status that never blocks the user.",
+          "",
+          "**When not to:** for arbitrary labels, categories, or severities use `Badge` directly; for an in-progress *action* (not sync state) prefer a button loading state. Don't also restate the state in prose beside the pill.",
+        ].join("\n"),
+      },
+    },
+  },
   argTypes: {
     state: { control: "inline-radio", options: STATES },
   },

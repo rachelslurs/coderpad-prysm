@@ -5,7 +5,20 @@ const meta = {
   title: "Forms/TextArea",
   component: TextArea,
   tags: ["autodocs"],
-  parameters: { layout: "padded" },
+  parameters: {
+    layout: "padded",
+    docs: {
+      description: {
+        component: [
+          "A multi-line **freeform** text field (react-aria) — same chrome as `TextInput`, vertically resizable.",
+          "",
+          "**When to use:** longer freeform prose — notes, comments, handoff detail.",
+          "",
+          "**When not to:** single-line values → `TextInput`; any value with a known shape (number, choice, boolean) → `Stepper` / `Select` / `Segmented` / `Toggle`.",
+        ].join("\n"),
+      },
+    },
+  },
   args: { label: "Notes", placeholder: "Add a note…" },
 } satisfies Meta<typeof TextArea>;
 

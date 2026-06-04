@@ -5,7 +5,20 @@ const meta = {
   title: "Forms/TextInput",
   component: TextInput,
   tags: ["autodocs"],
-  parameters: { layout: "padded" },
+  parameters: {
+    layout: "padded",
+    docs: {
+      description: {
+        component: [
+          "A single-line **freeform** text field (react-aria) with label, description, and validation wiring.",
+          "",
+          "**When to use:** genuinely freeform short text — names, emails, search.",
+          "",
+          "**When not to — prefer a structured control** (more reliable, faster to complete): numbers → `Stepper`; a small set of exclusive options → `Segmented` (or its picker variant); one choice from a longer list → `Select`; a boolean → `Toggle`; multi-line prose → `TextArea`.",
+        ].join("\n"),
+      },
+    },
+  },
   args: { label: "Full name", placeholder: "Jane Doe" },
 } satisfies Meta<typeof TextInput>;
 

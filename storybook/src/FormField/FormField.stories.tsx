@@ -9,7 +9,20 @@ const meta = {
   title: "Forms/FormField",
   component: FormField,
   tags: ["autodocs"],
-  parameters: { layout: "padded" },
+  parameters: {
+    layout: "padded",
+    docs: {
+      description: {
+        component: [
+          "A structured-input **wrapper**: an uppercase eyebrow label, an optional right-aligned reference hint (e.g. a prior 'Last 72' reading), and a control slot below. Owns its padding but no divider — stack fields in a `divide-y` list.",
+          "",
+          "**When to use:** labelling an interactive control — `Stepper`, `Segmented`, `Select`, `Toggle`, `TextInput` — especially in a data-entry form where showing a reference value helps.",
+          "",
+          "**When not to:** read-only label-over-value display — use `Field`. For a top-of-section heading, use `Section`.",
+        ].join("\n"),
+      },
+    },
+  },
   args: { label: "Field", children: null },
 } satisfies Meta<typeof FormField>;
 
