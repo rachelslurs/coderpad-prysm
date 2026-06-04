@@ -1,10 +1,4 @@
-import {
-  ClipboardList,
-  Clock,
-  LayoutGrid,
-  Settings,
-  type LucideIcon,
-} from "lucide-react";
+import { ClipboardList, Clock, LayoutGrid, type LucideIcon } from "lucide-react";
 import { formatClock, useShift } from "../state/shiftContext";
 
 export type NavView = "assignment" | "batch";
@@ -63,7 +57,6 @@ export default function NavRail({
             <span className="text-[10px] font-bold tabular-nums">{formatClock(clockedInAt)}</span>
           </div>
         )}
-        <NavButton icon={Settings} label="Settings" />
       </div>
     </nav>
   );
