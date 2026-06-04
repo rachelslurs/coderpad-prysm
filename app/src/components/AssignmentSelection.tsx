@@ -1,14 +1,5 @@
 import { useState } from "react";
-import {
-  AppBar,
-  Badge,
-  Button,
-  Card,
-  OverlayPanel,
-  Segmented,
-  Select,
-  TextArea,
-} from "@prysm/design-system";
+import { AppBar, Badge, Button, Card, OverlayPanel, Select } from "@prysm/design-system";
 import { ArrowRight, ChevronRight, Clock, Plus } from "lucide-react";
 import type { Patient } from "../../data/patients";
 import {
@@ -23,37 +14,40 @@ import {
   type AssignmentItem,
 } from "../lib/assignment";
 import { formatRoom } from "../lib/format";
+import { formatClock, useShift } from "../state/shiftContext";
 import ResidentRow from "./ResidentRow";
 
 type AssignmentSelectionProps = {
-  /** Confirm the assignment and start the shift — the preferred path. */
   onConfirm: (items: AssignmentItem[]) => void;
-  /**
-   * Start the shift before confirming an assignment (e.g. the supervisor hasn't
-   * finalized it yet). Optional — when omitted, only the confirm path shows.
-   */
   onStartWithoutAssignment?: () => void;
 };
 
-// Which adjustment dialog (if any) is open. Adjustments are deliberately behind
-// a modal + a required reason — the friction that keeps the supervisor's list
-// the default, not the exception.
 type Dialog = { kind: "remove"; patient: Patient } | { kind: "add" } | null;
 
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
 
-// The pre-shift gate: the CNA reviews the residents their supervisor pre-assigned
-// (name + room — just confirming *who*) and confirms to start. Removing or adding
-// a resident is possible but routes to a supervisor and never blocks starting.
+// Preset change reasons — structured, not freeform. Resident care preferences are
+// the most common reason a group gets adjusted, so they lead.
+const REASONS = [
+  "Resident care preference (e.g. female staff only)",
+  "Workload / acuity balance",
+  "Continuity of care",
+  "Safety concern",
+  "Other",
+];
+
+// The pre-shift gate: review the residents (name + room only — no picture, no
+// detail that would let a CNA cherry-pick away from harder patients) and confirm.
+// Switching to a different pre-set assignment is low friction (a dropdown); adding
+// or removing a specific resident is high friction (a reason that routes to a
+// supervisor) but never blocks starting.
 export default function AssignmentSelection({
   onConfirm,
   onStartWithoutAssignment,
 }: AssignmentSelectionProps) {
+  const { clockedInAt } = useShift();
   const [assignmentId, setAssignmentId] = useState(DEFAULT_ASSIGNMENT_ID);
   const [items, setItems] = useState<AssignmentItem[]>(buildInitialAssignment);
-  const [showAdjust, setShowAdjust] = useState(false);
-  // Tier 2 — editing residents one-by-one — is the last resort, gated behind an
-  // explicit "none of these assignments are mine" escalation.
   const [editResidents, setEditResidents] = useState(false);
   const [dialog, setDialog] = useState<Dialog>(null);
   const [reason, setReason] = useState("");
@@ -63,8 +57,7 @@ export default function AssignmentSelection({
     (p) => !items.some((i) => i.patient.id === p.id)
   );
 
-  // Tier 1 — switching to a different supervisor-defined group — is a clean swap
-  // of the whole list (and clears any in-progress per-resident edits).
+  // Switching the whole assignment is a clean swap (clears in-progress edits).
   const switchAssignment = (id: string) => {
     setAssignmentId(id);
     setItems(buildInitialAssignment(id));
@@ -79,11 +72,7 @@ export default function AssignmentSelection({
 
   const requestRemoval = (patient: Patient) => {
     setItems((prev) =>
-      prev.map((i) =>
-        i.patient.id === patient.id
-          ? { ...i, state: "removal-requested", reason }
-          : i
-      )
+      prev.map((i) => (i.patient.id === patient.id ? { ...i, state: "removal-requested", reason } : i))
     );
     closeDialog();
   };
@@ -91,24 +80,15 @@ export default function AssignmentSelection({
   const requestAddition = () => {
     const patient = addable.find((p) => String(p.id) === addId);
     if (!patient) return;
-    setItems((prev) => [
-      ...prev,
-      { patient, state: "addition-requested", reason },
-    ]);
+    setItems((prev) => [...prev, { patient, state: "addition-requested", reason }]);
     closeDialog();
   };
 
-  // Undo a removal request — keeping a resident is always frictionless.
   const keep = (patient: Patient) =>
     setItems((prev) =>
-      prev.map((i) =>
-        i.patient.id === patient.id
-          ? { patient: i.patient, state: "assigned" }
-          : i
-      )
+      prev.map((i) => (i.patient.id === patient.id ? { patient: i.patient, state: "assigned" } : i))
     );
 
-  // Drop an addition request entirely (it was never on the supervisor's list).
   const cancelAddition = (patient: Patient) =>
     setItems((prev) => prev.filter((i) => i.patient.id !== patient.id));
 
@@ -130,11 +110,7 @@ export default function AssignmentSelection({
           Keep
         </Button>
       ) : item.state === "addition-requested" ? (
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={() => cancelAddition(item.patient)}
-        >
+        <Button size="sm" variant="ghost" onClick={() => cancelAddition(item.patient)}>
           Cancel
         </Button>
       ) : (
@@ -168,34 +144,46 @@ export default function AssignmentSelection({
         className="flex-none"
         start={
           <span className="flex items-baseline gap-2">
-            <span className="text-lg font-semibold text-neutral-900">
-              1 North
-            </span>
+            <span className="text-lg font-semibold text-neutral-900">1 North</span>
             <span className="text-sm text-neutral-500">Skilled Nursing</span>
           </span>
         }
         end={
-          <Badge tone="neutral" size="sm">
-            Start of shift
-          </Badge>
+          clockedInAt ? (
+            <Badge tone="success" size="sm" icon={Clock}>
+              Clocked in {formatClock(clockedInAt)}
+            </Badge>
+          ) : null
         }
       />
 
       <div className="flex-1 overflow-y-auto">
         <div className="mx-auto w-full max-w-2xl px-6 py-10">
-          <header className="mb-6">
-            <p className="text-sm font-bold uppercase tracking-widest text-accent-700">
-              Your assignment
-            </p>
-            <h1 className="mt-1 text-3xl font-extrabold tracking-tight text-neutral-900">
-              Review &amp; confirm
-            </h1>
+          <header className="mb-5">
+            <p className="text-sm font-bold uppercase tracking-widest text-accent-700">Your assignment</p>
+            <h1 className="mt-1 text-3xl font-extrabold tracking-tight text-neutral-900">Review &amp; confirm</h1>
             <p className="mt-2 text-base text-neutral-600">
-              Your supervisor assigned these residents to you for this shift.
-              Confirming means you&rsquo;re accepting responsibility for their
-              care — it&rsquo;s the right way to start.
+              Confirming means you&rsquo;re accepting responsibility for these residents&rsquo; care.
             </p>
           </header>
+
+          {/* Low-friction: switch to a different pre-set assignment. */}
+          <div className="mb-5 flex flex-wrap items-center gap-3">
+            <div className="w-full max-w-xs">
+              <Select
+                label="Assignment"
+                options={ASSIGNMENTS.map((a) => ({
+                  value: a.id,
+                  label: `${a.label} · ${a.patientIds.length}`,
+                }))}
+                selectedKey={assignmentId}
+                onSelectionChange={(key) => switchAssignment(String(key))}
+              />
+            </div>
+            <p className="flex-1 text-sm text-neutral-500">
+              Not your group? Pick a different pre-set assignment.
+            </p>
+          </div>
 
           <Card padding="none" className="divide-y divide-neutral-100">
             {items.map((item) => (
@@ -203,99 +191,52 @@ export default function AssignmentSelection({
                 key={item.patient.id}
                 patient={item.patient}
                 minimal
+                hideAvatar
                 trailing={rowTrailing(item)}
               />
             ))}
           </Card>
 
-          {/* Adjustments — tucked away. The default path is simply to confirm. */}
+          {/* High-friction: add / remove a specific resident. */}
           <div className="mt-4">
             <button
               type="button"
-              onClick={() => setShowAdjust((v) => !v)}
-              aria-expanded={showAdjust}
+              onClick={() => setEditResidents((v) => !v)}
+              aria-expanded={editResidents}
               className="inline-flex items-center gap-1.5 rounded text-sm font-semibold text-neutral-500 hover:text-neutral-700 focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-600"
             >
               <ChevronRight
                 aria-hidden="true"
-                className={`h-4 w-4 transition-transform ${showAdjust ? "rotate-90" : ""}`}
+                className={`h-4 w-4 transition-transform ${editResidents ? "rotate-90" : ""}`}
               />
-              Need to change this list?
+              Need to add or remove a specific resident?
             </button>
 
-            {showAdjust && (
-              <div className="mt-3 space-y-4 rounded-md border border-neutral-200 bg-white p-4">
-                {/* Tier 1 — switch to the correct supervisor-defined group. */}
-                <div>
-                  <p className="text-sm text-neutral-600">
-                    If this isn&rsquo;t your group, switch to the right
-                    assignment — that&rsquo;s better than editing residents one
-                    by one.
-                  </p>
-                  <div className="mt-3">
-                    <Segmented
-                      variant="picker"
-                      label="Choose your assignment"
-                      value={assignmentId}
-                      onChange={switchAssignment}
-                      options={ASSIGNMENTS.map((a) => ({
-                        value: a.id,
-                        label: (
-                          <span>
-                            {a.label}{" "}
-                            <span className="font-normal text-neutral-400">
-                              · {a.patientIds.length}
-                            </span>
-                          </span>
-                        ),
-                      }))}
-                    />
-                  </div>
-                </div>
-
-                {/* Tier 2 — last resort: edit residents individually. */}
-                <div className="border-t border-neutral-100 pt-3">
-                  {!editResidents ? (
-                    <button
-                      type="button"
-                      onClick={() => setEditResidents(true)}
-                      className="rounded text-sm font-semibold text-neutral-500 underline-offset-2 hover:text-neutral-700 hover:underline focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-600"
-                    >
-                      None of these are mine — add or remove residents instead
-                    </button>
-                  ) : (
-                    <>
-                      <p className="text-sm text-neutral-600">
-                        Editing residents individually is the last resort. Each
-                        change goes to your supervisor for review and{" "}
-                        <span className="font-semibold text-neutral-800">
-                          won&rsquo;t delay your shift
-                        </span>{" "}
-                        — use the row controls above, or:
-                      </p>
-                      <Button
-                        className="mt-3"
-                        size="sm"
-                        variant="outline"
-                        iconLeft={Plus}
-                        onClick={() => setDialog({ kind: "add" })}
-                        disabled={addable.length === 0}
-                      >
-                        Add a resident
-                      </Button>
-                    </>
-                  )}
-                </div>
+            {editResidents && (
+              <div className="mt-3 rounded-md border border-neutral-200 bg-white p-4">
+                <p className="text-sm text-neutral-600">
+                  This goes to your supervisor for review and{" "}
+                  <span className="font-semibold text-neutral-800">won&rsquo;t delay your shift</span>. Use the
+                  row controls above, or:
+                </p>
+                <Button
+                  className="mt-3"
+                  size="sm"
+                  variant="outline"
+                  iconLeft={Plus}
+                  onClick={() => setDialog({ kind: "add" })}
+                  disabled={addable.length === 0}
+                >
+                  Add a resident
+                </Button>
               </div>
             )}
           </div>
 
           <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-neutral-200 pt-6">
             <p className="text-sm text-neutral-600">
-              <span className="font-semibold text-neutral-900">
-                {plural(effectiveCount, "resident")}
-              </span>{" "}
-              on your assignment
+              <span className="font-semibold text-neutral-900">{plural(effectiveCount, "resident")}</span> on your
+              assignment
               {hasPendingRequests(items) && (
                 <>
                   {" · "}
@@ -316,12 +257,7 @@ export default function AssignmentSelection({
                   Assignment not ready? Start shift now
                 </button>
               )}
-              <Button
-                size="touch"
-                iconRight={ArrowRight}
-                data-testid="confirm-shift"
-                onClick={() => onConfirm(items)}
-              >
+              <Button size="touch" iconRight={ArrowRight} data-testid="confirm-shift" onClick={() => onConfirm(items)}>
                 Confirm &amp; start shift
               </Button>
             </div>
@@ -343,19 +279,15 @@ export default function AssignmentSelection({
         >
           <Card className="w-full max-w-md">
             <h2 className="text-xl font-extrabold text-neutral-900">
-              {dialog.kind === "remove"
-                ? "Request to remove a resident"
-                : "Request to add a resident"}
+              {dialog.kind === "remove" ? "Request to remove a resident" : "Request to add a resident"}
             </h2>
             {dialog.kind === "remove" ? (
               <p className="mt-1 text-sm text-neutral-600">
-                {dialog.patient.name} · Room {formatRoom(dialog.patient.room)}.
-                They stay on your roster until a supervisor reviews this.
+                {dialog.patient.name} · Room {formatRoom(dialog.patient.room)}. They stay on your roster until a
+                supervisor reviews this.
               </p>
             ) : (
-              <p className="mt-1 text-sm text-neutral-600">
-                Taking an extra resident also needs supervisor sign-off.
-              </p>
+              <p className="mt-1 text-sm text-neutral-600">Taking an extra resident also needs supervisor sign-off.</p>
             )}
 
             <div className="mt-4 space-y-4">
@@ -363,19 +295,17 @@ export default function AssignmentSelection({
                 <Select
                   label="Resident"
                   placeholder="Choose a resident…"
-                  options={addable.map((p) => ({
-                    value: String(p.id),
-                    label: `${p.name} · Room ${p.room}`,
-                  }))}
+                  options={addable.map((p) => ({ value: String(p.id), label: `${p.name} · Room ${p.room}` }))}
                   selectedKey={addId ?? undefined}
                   onSelectionChange={(key) => setAddId(String(key))}
                 />
               )}
-              <TextArea
+              <Select
                 label="Reason for your supervisor"
-                placeholder="Why this change is needed…"
-                value={reason}
-                onChange={setReason}
+                placeholder="Choose a reason…"
+                options={REASONS}
+                selectedKey={reason || undefined}
+                onSelectionChange={(key) => setReason(String(key))}
               />
             </div>
 
@@ -385,14 +315,8 @@ export default function AssignmentSelection({
               </Button>
               <Button
                 tone={dialog.kind === "remove" ? "danger" : "accent"}
-                disabled={
-                  !reason.trim() || (dialog.kind === "add" && !addId)
-                }
-                onClick={
-                  dialog.kind === "remove"
-                    ? () => requestRemoval(dialog.patient)
-                    : requestAddition
-                }
+                disabled={!reason || (dialog.kind === "add" && !addId)}
+                onClick={dialog.kind === "remove" ? () => requestRemoval(dialog.patient) : requestAddition}
               >
                 Send request to supervisor
               </Button>
