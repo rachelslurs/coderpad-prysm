@@ -16,6 +16,8 @@ export type ShiftContextValue = {
   logEntries: LogEntry[];
   /** Record a structured task value (stamped with the CNA + time). */
   logEntry: (entry: { residentId: number; taskId: string; value: string }) => void;
+  /** Strike out (correct) one of your own entries — no deletes. */
+  strikeEntry: (id: string, reason: string) => void;
 };
 
 export const ShiftContext = createContext<ShiftContextValue | null>(null);

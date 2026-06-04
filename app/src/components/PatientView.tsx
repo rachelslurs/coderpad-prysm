@@ -80,7 +80,7 @@ function PagerButton({
 // chooses to log; entering documentation swaps the prev/next pager for a tasks
 // list and shows the structured inputs on the right.
 export default function PatientView({ patient, roster, onBack, onNavigate }: PatientViewProps) {
-  const { logEntries, logEntry } = useShift();
+  const { logEntries, logEntry, strikeEntry } = useShift();
   const [docTaskId, setDocTaskId] = useState<string | null>(null);
 
   const tasks = tasksForResident(patient);
@@ -210,6 +210,10 @@ export default function PatientView({ patient, roster, onBack, onNavigate }: Pat
                 task={selected}
                 entry={entryFor(logEntries, patient.id, selected.id)}
                 onLog={(value) => logEntry({ residentId: patient.id, taskId: selected.id, value })}
+                onStrike={(reason) => {
+                  const e = entryFor(logEntries, patient.id, selected.id);
+                  if (e) strikeEntry(e.id, reason);
+                }}
               />
             </div>
           ) : (
