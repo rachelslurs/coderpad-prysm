@@ -26,16 +26,26 @@ export { ColumnHeader } from "./ColumnHeader";
 export type { ColumnHeaderProps, SortDirection } from "./ColumnHeader";
 export { TaskProgress } from "./TaskProgress";
 export type { TaskProgressProps } from "./TaskProgress";
+export { EntityCard } from "./EntityCard";
+export type { EntityCardProps } from "./EntityCard";
+export { EntityRow } from "./EntityRow";
+export type { EntityRowProps } from "./EntityRow";
 
 // Feedback
 export { EmptyState } from "./EmptyState";
 export type { EmptyStateProps } from "./EmptyState";
 export { Skeleton } from "./Skeleton";
 export type { SkeletonProps } from "./Skeleton";
+export { SyncStatus } from "./SyncStatus";
+export type { SyncStatusProps, SyncState } from "./SyncStatus";
 
 // Overlays
 export { OverlayPanel } from "./OverlayPanel";
 export type { OverlayPanelProps } from "./OverlayPanel";
+
+// Navigation
+export { AppBar } from "./AppBar";
+export type { AppBarProps } from "./AppBar";
 
 // Forms (structured inputs — react-aria-components)
 export { Toggle } from "./Toggle";
@@ -44,6 +54,14 @@ export { Segmented } from "./Segmented";
 export type { SegmentedProps } from "./Segmented";
 export { Stepper } from "./Stepper";
 export type { StepperProps } from "./Stepper";
+export { FormField } from "./FormField";
+export type { FormFieldProps } from "./FormField";
+export { TextInput } from "./TextInput";
+export type { TextInputProps } from "./TextInput";
+export { TextArea } from "./TextArea";
+export type { TextAreaProps } from "./TextArea";
+export { Select } from "./Select";
+export type { SelectProps } from "./Select";
 
 // Keyboard
 export { Kbd } from "./Kbd";
