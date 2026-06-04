@@ -1,0 +1,72 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Overview" />
+
+# Prysm Design System
+
+A small, composable set of primitives for **Prysm Health** — software for skilled
+nursing facilities. The components here are generic (no patient/domain knowledge);
+they carry the product's visual language — Figtree type, a slate neutral spine with
+a single teal action color, semantic `tone`s, lucide icons, and **redundant
+encoding** (state is never color alone).
+
+This page and **[Choosing a component](?path=/docs/choosing-a-component--docs)**
+exist so you (and tools reading these docs) can pick the right primitive without
+guessing. Every component also carries a **"when to use / when not to use"** blurb
+in its own Docs page.
+
+---
+
+## Principles that drive component choice
+
+- **Redundant encoding, always.** No state is carried by color alone — color is
+  paired with an icon and a text label (see **Badge**). It's a WCAG requirement and
+  a reliability one.
+- **Weight carries hierarchy, not color.** Importance comes from type weight/size;
+  color is reserved for status and action. This is why **Field** leans on size, not
+  tint, for emphasis.
+- **Touch-friendly.** Interactive targets are ≥ **48px**. **Button**'s `size="touch"`
+  and the **Stepper**/**Toggle** controls are sized for tablets and gloved hands.
+- **Hairlines over shadows.** Separation is done with 1px borders; elevation is spent
+  only on things that genuinely float (**OverlayPanel**).
+
+---
+
+## Structured input only — the deliberate form-control gaps
+
+> **There is no freeform text `Input`, `Textarea`, `Select`/dropdown, or
+> multi-select control in this system, by design.** Don't go looking for one — it
+> isn't undocumented, it's intentionally absent.
+
+Every input is **structured** — numeric or a predefined selection — because the
+product captures clinical data (vitals, ADLs, meal intake) that must stay clean,
+comparable, and fast to enter mid-task. Reach for the structured control that fits:
+
+| You need to capture… | Use | Not |
+|---|---|---|
+| A number (vital, count, 0–10 scale) | **Stepper** | a text input |
+| Exactly one of a small fixed set | **Segmented** | a `Select` dropdown |
+| A binary on/off state | **Toggle** | a checkbox-as-text |
+| Several independent on/off states | **several Toggles** | a multi-select |
+| Free prose | *(nothing — out of scope)* | a `Textarea` |
+
+If a future requirement genuinely needs freeform text, it's a new component with its
+own validation story — not an oversight to paper over with a raw `<input>`.
+
+---
+
+## The catalog at a glance
+
+- **Actions** — **Button** (the only interactive action primitive).
+- **Forms** (all structured) — **Segmented** (one-of-N), **Toggle** (binary),
+  **Stepper** (numeric).
+- **Data Display** — **Badge**, **Card**, **Section**, **Field**, **IconField**,
+  **IconTile**, **Avatar**, **TaskProgress**, **ColumnHeader**, **SortIndicator**.
+- **Feedback** — **Skeleton** (loading), **EmptyState** (no results).
+- **Overlays** — **OverlayPanel** (covering detail/drawer).
+- **Keyboard** — **Kbd** (shortcut hints).
+- **Tokens** — Color Tones.
+
+Confusable pairs (Badge vs IconTile vs Button-as-chip, Field vs IconField,
+Card vs Section, Segmented vs multi-select) are disambiguated in
+**[Choosing a component](?path=/docs/choosing-a-component--docs)**.

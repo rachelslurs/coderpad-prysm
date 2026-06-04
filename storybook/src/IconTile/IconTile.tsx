@@ -14,8 +14,13 @@ const PAD = { sm: "p-1.5", md: "p-2" } as const;
 const ICON = { sm: "h-3.5 w-3.5", md: "h-4 w-4" } as const;
 
 export type IconTileProps = {
+  /** The glyph (decorative — rendered `aria-hidden`; pair with a visible label,
+   *  as IconField does, when it carries meaning). */
   icon: LucideIcon;
+  /** Semantic tint: a `*-50` background behind a `*-600` glyph. Defaults to
+   *  `accent`. */
   tone?: Tone;
+  /** Tile size. `md` (default) or `sm` for dense rows. */
   size?: keyof typeof PAD;
 };
 

@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 export type EmptyStateProps = {
   /** Optional icon shown above the message. */
   icon?: LucideIcon;
+  /** The message (e.g. "No patients match your search."). */
   children: ReactNode;
   className?: string;
 };

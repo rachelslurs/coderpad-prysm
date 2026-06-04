@@ -6,6 +6,21 @@ const meta = {
   title: "Data Display/IconTile",
   component: IconTile,
   tags: ["autodocs"],
+  parameters: {
+    docs: {
+      description: {
+        component: [
+          'Tinted square holding a single icon — the "icon chip" used in list rows, detail fields, and headers. `tone` sets a `*-50` background behind a `*-600` glyph.',
+          "",
+          "**When to use:** a small standalone semantic/decorative icon affordance.",
+          "",
+          "**When not to use:** when the icon needs a label/value beside it, use **IconField**; for a labelled status chip, use **Badge**; for a person, use **Avatar**.",
+          "",
+          "The icon is rendered `aria-hidden` — pair it with a visible label (as IconField does) when it carries meaning.",
+        ].join("\n"),
+      },
+    },
+  },
   argTypes: {
     tone: {
       control: "inline-radio",

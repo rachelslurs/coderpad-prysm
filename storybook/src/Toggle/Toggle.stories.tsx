@@ -6,6 +6,19 @@ const meta = {
   title: "Forms/Toggle",
   component: Toggle,
   tags: ["autodocs"],
+  parameters: {
+    docs: {
+      description: {
+        component: [
+          "Binary on/off switch (react-aria `Switch`: `role=switch`, Space to toggle, announced state). The pill visual is the design-system's.",
+          "",
+          "**When to use:** a single binary setting/state (Bathing complete, Privacy on/off, Isolation precautions).",
+          "",
+          "**When not to use:** for one-of-N from a fixed set, use **Segmented**; for a numeric value, use **Stepper**; for an action, use **Button**. Multi-select lists are composed from *several* Toggles — this system has no dedicated multi-select control.",
+        ].join("\n"),
+      },
+    },
+  },
   args: { children: "Bathing complete", defaultSelected: true },
 } satisfies Meta<typeof Toggle>;
 

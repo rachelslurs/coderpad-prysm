@@ -5,6 +5,21 @@ const meta = {
   title: "Data Display/TaskProgress",
   component: TaskProgress,
   tags: ["autodocs"],
+  parameters: {
+    docs: {
+      description: {
+        component: [
+          '"3 / 6" task progress, wrapping react-aria `ProgressBar` (`role=progressbar` + aria-value*). Two visuals: `ring` for cards, `bar` for rows.',
+          "",
+          "**When to use:** *determinate* progress toward a known total.",
+          "",
+          "**When not to use:** for *indeterminate* loading, use **Skeleton**; for a static status label, use **Badge**.",
+          "",
+          "`size` sets the ring diameter (ring variant only); `tone` colors the fill (use `success` at completion).",
+        ].join("\n"),
+      },
+    },
+  },
   argTypes: {
     variant: { control: "inline-radio", options: ["ring", "bar"] },
     tone: {

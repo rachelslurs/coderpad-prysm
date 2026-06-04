@@ -2,12 +2,18 @@ import type { ReactNode } from "react";
 import { Switch } from "react-aria-components";
 
 export type ToggleProps = {
-  /** Visible label (also the accessible name). */
+  /** Visible label (also the accessible name). Omit it and pass `aria-label`
+   *  for a label-less switch. */
   children?: ReactNode;
+  /** On/off state (controlled). */
   isSelected?: boolean;
+  /** Initial on/off state (uncontrolled). */
   defaultSelected?: boolean;
+  /** Fires with the new on/off state. */
   onChange?: (isSelected: boolean) => void;
+  /** Disable interaction (dims to 50% + not-allowed cursor). */
   isDisabled?: boolean;
+  /** Accessible name when there is no visible `children` label. */
   "aria-label"?: string;
 };
 

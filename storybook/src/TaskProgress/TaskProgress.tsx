@@ -20,9 +20,13 @@ const RING_STROKE: Record<Tone, string> = {
 };
 
 export type TaskProgressProps = {
+  /** Completed count (the numerator in "value / total"). */
   value: number;
+  /** Target count (the denominator, and the progress max). */
   total: number;
+  /** Visual. `ring` (default) for cards; `bar` for full-width rows. */
   variant?: "ring" | "bar";
+  /** Fill color. Defaults to `accent`; use `success` at completion. */
   tone?: Tone;
   /** Ring diameter in px (ring variant only). */
   size?: number;

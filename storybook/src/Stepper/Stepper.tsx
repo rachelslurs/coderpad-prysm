@@ -3,12 +3,18 @@ import { NumberField, Group, Input, Button } from "react-aria-components";
 import { Minus, Plus, History } from "lucide-react";
 
 export type StepperProps = {
-  /** `null`/`undefined` = unset (step mode shows "Not set"). */
+  /** Current value (controlled). `null`/`undefined` = unset (step mode shows
+   *  "Not set"). */
   value?: number | null;
+  /** Initial value (uncontrolled). */
   defaultValue?: number;
+  /** Fires with the new value (already clamped to range and rounded to step). */
   onChange?: (value: number) => void;
+  /** Lower bound (inclusive). Values clamp to it; Home jumps to it. */
   minValue?: number;
+  /** Upper bound (inclusive). Values clamp to it; End jumps to it. */
   maxValue?: number;
+  /** Increment per +/− press (and the rounding granularity). Defaults to 1. */
   step?: number;
   /** Trailing unit label (e.g. "°F", "mL"). */
   unit?: string;

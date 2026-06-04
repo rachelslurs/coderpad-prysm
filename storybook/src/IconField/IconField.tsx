@@ -5,12 +5,16 @@ import { IconTile } from "../IconTile";
 import { Field } from "../Field";
 
 export type IconFieldProps = {
+  /** Leading icon, rendered inside the IconTile. */
   icon: LucideIcon;
+  /** Small muted label (forwarded to the inner Field). */
   label: ReactNode;
+  /** Semantic tone for the IconTile tint. Defaults to `accent`. */
   tone?: Tone;
-  /** Value emphasis, forwarded to the Field. */
+  /** Value emphasis, forwarded to the Field. `md` (default) or `lg`. */
   size?: "md" | "lg";
   className?: string;
+  /** The value (forwarded to the inner Field). */
   children: ReactNode;
 };
 

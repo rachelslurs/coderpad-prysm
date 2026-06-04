@@ -1,0 +1,80 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Choosing a component" />
+
+# Choosing a component
+
+A decision guide for the cases where two primitives look interchangeable. Each
+component's own Docs page has the full "when to use / when not to use" blurb — this
+page is the cross-reference for **confusable pairs**.
+
+---
+
+## By intent
+
+| I want to… | Use | See also |
+|---|---|---|
+| Perform an action on click/tap | **Button** | Badge (looks similar, not clickable) |
+| Show a status / category / count label | **Badge** | IconTile, Button |
+| Capture one of a small fixed set | **Segmented** | Toggle (binary), Stepper (numeric) |
+| Capture a binary on/off state | **Toggle** | Segmented |
+| Capture a number | **Stepper** | — (no freeform text input exists) |
+| Show a labelled value (read-only) | **Field** | IconField |
+| Show a labelled value with a leading icon | **IconField** | Field, IconTile |
+| Show a standalone tinted icon | **IconTile** | Badge, Avatar |
+| Represent a person | **Avatar** | IconTile |
+| Group content on a bordered surface | **Card** | Section |
+| Group content under an eyebrow heading | **Section** | Card |
+| Show determinate progress (3 / 6) | **TaskProgress** | Skeleton |
+| Show loading placeholders | **Skeleton** | EmptyState, TaskProgress |
+| Show a "no results" message | **EmptyState** | Skeleton |
+| Cover a region with a detail view | **OverlayPanel** | Card, Section |
+| Build a sortable table header | **ColumnHeader** | SortIndicator |
+
+---
+
+## Confusable pairs
+
+### Badge vs IconTile vs Button-as-chip
+
+All three render as small rounded elements, but they mean different things:
+
+- **Badge** — a *labelled, non-interactive* status pill (color + optional icon +
+  text). Conveys state/category. Never clickable.
+- **IconTile** — a *tinted icon with no label*. A decorative/semantic chip; pair it
+  with text (that's exactly what **IconField** does) when it carries meaning.
+- **Button** (`variant="outline"`/`"ghost"`) — when the chip is actually a *control*
+  you can click. If it does something on click, it's a Button, not a Badge.
+
+### Field vs IconField
+
+- **Field** — label-over-value, no icon.
+- **IconField** — the same pair with a leading **IconTile** (`icon` · label · value).
+  Use it when the icon adds scannability; otherwise prefer plain **Field**.
+
+### Card vs Section
+
+- **Card** — a bordered, slightly-raised white *surface*. Use it to visually contain.
+- **Section** — a *labelled group* (uppercase eyebrow heading + body) with **no**
+  border or surface. Compose a Section *inside* a Card when you need both.
+
+### Segmented vs (the missing) multi-select
+
+- **Segmented is single-select.** It's an exclusive radio group — picking one option
+  deselects the previous. Its name does not imply this, so don't assume otherwise.
+- **For multi-select, there is no dedicated control.** Compose **several Toggles**
+  (one per option), or a set of Badges if the result is read-only. Do not try to make
+  Segmented multi-select.
+
+### SortIndicator vs ColumnHeader
+
+- **ColumnHeader** is what you usually want — pass `onSort` and it renders the
+  indicator, wires `aria-sort`, and handles click + Enter/Space across the cell.
+- **SortIndicator** is the bare chevrons, for building a *custom* sortable surface.
+  It's decorative (`aria-hidden`) and must be paired with a semantic sort signal.
+
+### Skeleton vs EmptyState vs TaskProgress
+
+- **Skeleton** — content is *loading* (indeterminate); hold the layout.
+- **EmptyState** — the load finished and there's *nothing* to show.
+- **TaskProgress** — *determinate* progress toward a known total (3 / 6).

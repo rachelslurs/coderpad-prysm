@@ -3,6 +3,13 @@ import "../src/styles/tokens.css";
 
 const preview: Preview = {
   parameters: {
+    options: {
+      // Keep the prose guides (Overview, Choosing a component) above the
+      // component groups; everything else stays alphabetical.
+      storySort: {
+        order: ["Overview", "Choosing a component", "*"],
+      },
+    },
     controls: {
       matchers: {
         color: /(background|color)$/i,

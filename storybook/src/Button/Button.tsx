@@ -59,11 +59,22 @@ const VARIANT_TONE: Record<Variant, Record<Tone, string>> = {
 };
 
 export type ButtonProps = {
+  /** Emphasis level. `solid` (default) = the one main action; `outline` = a
+   *  lower-emphasis action beside a solid one (Cancel, Save for later); `ghost`
+   *  = tertiary / low-stakes (Skip, Back). */
   variant?: Variant;
+  /** Semantic color. Defaults to `accent` (the brand action color). Use
+   *  `danger` for destructive actions; `neutral` for de-emphasized ones. */
   tone?: Tone;
+  /** Target size. `md` (default) and `sm` for dense desktop toolbars; `touch`
+   *  is the 48px min-height mobile/gloved-hand target — use it for primary
+   *  actions on touch surfaces. */
   size?: keyof typeof SIZE;
+  /** Leading icon (decorative; rendered `aria-hidden`). */
   iconLeft?: LucideIcon;
+  /** Trailing icon (decorative; rendered `aria-hidden`). */
   iconRight?: LucideIcon;
+  /** Button label — the accessible name. */
   children: ReactNode;
 } & ButtonHTMLAttributes<HTMLButtonElement> & {
     // Allow data-* passthrough (test ids, analytics hooks) — React's attribute

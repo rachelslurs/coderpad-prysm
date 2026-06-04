@@ -5,6 +5,19 @@ const meta = {
   title: "Data Display/Avatar",
   component: Avatar,
   tags: ["autodocs"],
+  parameters: {
+    docs: {
+      description: {
+        component: [
+          "Photo-or-fallback avatar: photo → initials (accent tint) → generic user icon. Always renders *something*, even with no `src` and no `name`.",
+          "",
+          "**When to use:** represent a person (resident, staff).",
+          "",
+          "**When not to use:** for a non-person semantic icon, use **IconTile**; for a status label, use **Badge**.",
+        ].join("\n"),
+      },
+    },
+  },
   argTypes: { size: { control: "inline-radio", options: ["sm", "md", "lg"] } },
   args: { name: "Margaret Holloway", size: "md" },
 } satisfies Meta<typeof Avatar>;

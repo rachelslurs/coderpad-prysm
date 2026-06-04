@@ -5,6 +5,21 @@ const meta = {
   title: "Feedback/Skeleton",
   component: Skeleton,
   tags: ["autodocs"],
+  parameters: {
+    docs: {
+      description: {
+        component: [
+          "Shimmering placeholder for async content (`role=status`, announced once). Compose several to mirror the real layout (see the ResidentRow story).",
+          "",
+          "**When to use:** while content is loading, to hold layout and signal progress.",
+          "",
+          '**When not to use:** for a "nothing here" message, use **EmptyState**; for *determinate* progress toward a total, use **TaskProgress**.',
+          "",
+          "Use `circle` for avatar placeholders; `width`/`height`/`radius` accept a number (px) or any CSS length.",
+        ].join("\n"),
+      },
+    },
+  },
   args: { width: 240, height: 16 },
 } satisfies Meta<typeof Skeleton>;
 

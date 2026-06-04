@@ -14,6 +14,7 @@ export type AvatarProps = {
   src?: string;
   /** Name — rendered as initials when there's no photo. */
   name?: string;
+  /** Diameter. `sm` 36px · `md` 48px (default) · `lg` 56px. */
   size?: keyof typeof SIZE;
   /** Alt text for the photo (defaults to `name`). */
   alt?: string;
