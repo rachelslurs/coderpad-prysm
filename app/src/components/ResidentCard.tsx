@@ -27,22 +27,18 @@ export default function ResidentCard({ patient, onPress }: ResidentCardProps) {
       className="group flex h-full w-full flex-col gap-3 border border-neutral-200 bg-white p-4 text-left transition-colors hover:bg-neutral-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent-600"
     >
       <div className="flex items-start gap-3">
-        <span
-          title={patient.name}
-          className={`relative z-0 flex-none rounded-full ${
-            patient.photoUrl
-              ? "transition-transform duration-150 ease-out hover:z-20 hover:scale-[1.9] hover:shadow-xl group-focus-visible:z-20 group-focus-visible:scale-[1.9]"
-              : ""
-          }`}
-        >
-          <Avatar name={patient.name} src={patient.photoUrl} size="md" />
-        </span>
-        <div className="min-w-0 flex-1">
-          <div className="text-sm font-bold tabular-nums text-neutral-500">
-            Room {formatRoom(patient.room)}
-          </div>
-          <div className="truncate text-lg font-extrabold leading-tight text-neutral-900">
-            {patient.name}
+        {/* Identity (picture + room + name) zooms together on card hover/focus. */}
+        <div className="flex min-w-0 flex-1 origin-top-left items-start gap-3 transition-transform duration-150 ease-out group-hover:scale-[1.1] group-focus-visible:scale-[1.1]">
+          <span title={patient.name} className="flex-none">
+            <Avatar name={patient.name} src={patient.photoUrl} size="md" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-bold tabular-nums text-neutral-500">
+              Room {formatRoom(patient.room)}
+            </div>
+            <div className="truncate text-lg font-extrabold leading-tight text-neutral-900">
+              {patient.name}
+            </div>
           </div>
         </div>
         {patient.tasksTotal > 0 && (

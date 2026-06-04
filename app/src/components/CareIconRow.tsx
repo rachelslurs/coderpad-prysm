@@ -32,10 +32,13 @@ function Slot({
   icon: Icon,
   label,
   muted = false,
+  badge,
 }: {
   icon: LucideIcon | null;
   label?: string;
   muted?: boolean;
+  /** Small number badge on the icon (e.g. people required for a transfer). */
+  badge?: number;
 }) {
   // Fixed-width slot keeps the three positions aligned even when a slot is empty.
   if (!Icon) return <span aria-hidden="true" className="h-6 w-6 flex-none" />;
@@ -44,11 +47,16 @@ function Slot({
       role="img"
       aria-label={label}
       title={label}
-      className={`inline-flex h-6 w-6 flex-none items-center justify-center rounded ${
+      className={`relative inline-flex h-6 w-6 flex-none items-center justify-center rounded ${
         muted ? "text-neutral-400" : "text-neutral-600"
       }`}
     >
       <Icon aria-hidden="true" className="h-[18px] w-[18px]" />
+      {badge != null && (
+        <span className="absolute -bottom-1 -right-1 grid h-3.5 min-w-[14px] place-items-center rounded-full bg-neutral-700 px-[3px] text-[9px] font-bold leading-none text-white">
+          {badge}
+        </span>
+      )}
     </span>
   );
 }
